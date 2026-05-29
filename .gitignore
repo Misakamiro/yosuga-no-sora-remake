@@ -1,0 +1,19 @@
+# 本机用户数据
+savedata/
+
+# 发布/构建产物
+dist/
+
+# 临时工作目录
+work/
+tmp/
+temp/
+
+# 常见日志和临时文件
+*.log
+*.tmp
+*.cache
+
+# 系统文件
+Thumbs.db
+desktop.ini

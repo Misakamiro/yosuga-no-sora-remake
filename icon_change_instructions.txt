@@ -1,0 +1,14 @@
+# Icon Replacement Script for Yosuga no Sora (krkrZ)
+# 
+# The icon file has been saved to: F:\Galgame\yosuga_krkrZ\game.ico
+#
+# To replace the game icon, you need to use a tool like Resource Hacker:
+# 1. Download Resource Hacker from: http://www.angusj.com/resourcehacker/
+# 2. Run Resource Hacker
+# 3. Open: F:\Galgame\yosuga_krkrZ\tvpwin32.exe
+# 4. Go to Action -> Replace Icon
+# 5. Select: F:\Galgame\yosuga_krkrZ\game.ico
+# 6. Click Replace
+# 7. Save the file
+#
+# Note: Make sure to back up the original exe first!

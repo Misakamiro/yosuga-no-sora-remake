@@ -1,0 +1,29 @@
+// Override System.inform to completely disable dialog popup
+// This MUST be the very first line executed
+System.inform = function(msg)
+{
+	Debug.message("!!! INFORM: " + msg);
+	return;
+};
+
+// krkrZ compatibility layer
+Scripts.execStorage("k2compat.tjs");
+
+// Enable debug output
+Debug.message("=== yosuga_krkrZ startup ===");
+
+// In directory mode (no XP3 archives), use "/" instead of ">" for subdirectory paths
+// The ">" separator is for XP3 archive paths only and won't work with plain directories
+Storages.addAutoPath("system/");
+Storages.addAutoPath("content-data/");
+Debug.message("Auto-paths: system/ and content-data/ registered");
+
+// Startup sequence - files found via auto-path in system/ directory
+Scripts.execStorage("Status.tjs");
+Debug.message("startup.tjs: Status.tjs loaded");
+Debug.message("startup.tjs: About to load Initialize.tjs...");
+Scripts.execStorage("Initialize.tjs");
+Debug.message("startup.tjs: Initialize.tjs loaded");
+Debug.message("startup.tjs: About to execute begin.tjs...");
+Scripts.execStorage("begin.tjs");
+Debug.message("startup.tjs: begin.tjs loaded");
