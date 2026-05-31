@@ -308,7 +308,7 @@ class SceneManager extends SceneBase{
 		if(CONFIG.screenModeKeep == 0){
 		//システム情報を保存する前に初期化する
 			CONFIG.fullScreen = 0;
-			CONFIG.windowZoom = WINDOW_ZOOM_PER;
+			CONFIG.windowZoom = COMPAT_FIT_SCALE * WINDOW_ZOOM_PER_FILTER;
 		}
 		//システム情報保存
 		SaveSystemRegister();

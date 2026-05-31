@@ -217,6 +217,7 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 	function debugJump(str, label=""){
 		StopBgm();
 		close();
+		leaveNativeTitleLayout();
 		game.changeScene(SCENE_ADV, false, %[debug:str, label:label]);
 	}
 
@@ -280,6 +281,8 @@ class MovieScene extends Layer, SceneBase{
 
 class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 	var _spr = [];
+	var _wideBg;
+	var _nativeWideTitle = false;
 
 	var _btnBase;
 	var _ptGrp = [];
@@ -314,9 +317,17 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 	function Title(win, par, fBonus=false){
 		Sprite(...);
 		hitThreshold = 0;
-		loadImages("FRM_0511");
-		setSizeToImageSize();
+		hasImage = false;
+		setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		absolute = LAYER_TITLE;
+
+		_wideBg = createWideTitleBackground(win);
+		_nativeWideTitle = _wideBg !== void;
+		if(_nativeWideTitle) setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		if(_wideBg === void){
+			loadImages("FRM_0511");
+			setSizeToImageSize();
+		}
 
 		_btnBase = new global.Layer(win, this);
 		with(_btnBase){
@@ -459,6 +470,8 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 
 		_sprASaveInfo = new SavedataHeader(win, this, true);
 
+		applyNativeTitleLayout();
+
 		fadeEnd();
 		visible = true;
 
@@ -467,11 +480,36 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		window.addInputNotify(this);
 
 	}
+
+	function createWideTitleBackground(win){
+		var spr = new global.Sprite(win, win.compatBackdropLayer);
+		with(spr){
+			.hitThreshold = 256;
+			.absolute = 0;
+			.loadImages("FRM_0511");
+			.setSizeToImageSize();
+			.setAffineOffset(0, 0);
+			.setPos(0, 0);
+		}
+
+		if(spr.width == DISPLAY_WIDTH && spr.height == DISPLAY_HEIGHT){
+			win.enterNativeTitleLayout();
+			spr.setZoom(100, 100);
+			spr.setPos(0, 0);
+			spr.visible = true;
+			return spr;
+		}
+
+		invalidate spr;
+		return void;
+	}
+
 	function finalize(){
 		window.removeInputNotify(this);
 
 		InvalidateArray(_spr);
 		invalidate _spr;
+		invalidate _wideBg;
 		for(var i=0;i<BTN_LIST.count;i++) invalidate this[BTN_LIST[i].id];
 		invalidate _btnBase;
 		invalidate _grpBtn;
@@ -491,8 +529,48 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 	}
 
 	function close(){
+		if(_wideBg !== void) _wideBg.visible = false;
+		if(_nativeWideTitle) window.leaveNativeTitleLayout();
 		visible = false;
 		valid = false;
+	}
+
+	function nativeTitleX(x, w=0){
+		return COMPAT_STAGE_X + (((x * 2 + w) * COMPAT_FIT_SCALE) \ 200) - (w \ 2);
+	}
+	function nativeTitleY(y, h=0){
+		return COMPAT_STAGE_Y + (((y * 2 + h) * COMPAT_FIT_SCALE) \ 200) - (h \ 2);
+	}
+	function applyNativeTitleLayout(){
+		if(!_nativeWideTitle) return;
+
+		var oldGrpX = [_ptGrp[0].x, _ptGrp[1].x];
+		var oldGrpY = [_ptGrp[0].y, _ptGrp[1].y];
+
+		_btnBase.setSize(DISPLAY_WIDTH, _btnBase.height);
+		_btnBase.setPos(0, DISPLAY_HEIGHT - _btnBase.height);
+
+		_grpBtn.setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		_grpBtn.setPos(0, 0);
+		_grpBtnBonus.setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+		_grpBtnBonus.setPos(0, 0);
+
+		for(var i=0;i<BTN_LIST.count;i++){
+			var btn = this[BTN_LIST[i].id];
+			var grp = BTN_LIST[i].par;
+			var oldX = oldGrpX[grp] + btn.left;
+			var oldY = oldGrpY[grp] + btn.top;
+			btn.setPos(nativeTitleX(oldX, btn.width), nativeTitleY(oldY, btn.height));
+		}
+
+		_ptGrp[0].set(0, 0);
+		_ptGrp[1].set(0, 0);
+
+		_logo.setPos(nativeTitleX(176, _logo.width), nativeTitleY(88, _logo.height));
+		_version.setPos(COMPAT_STAGE_X + COMPAT_STAGE_WIDTH - _version.width, DISPLAY_HEIGHT - _version.height - 8);
+	}
+	function leaveNativeTitleLayout(){
+		if(_nativeWideTitle) window.leaveNativeTitleLayout();
 	}
 
 	function fadeEnd(){
@@ -528,6 +606,7 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		case btnStart :
 			hitThresholdSelectItems(256);
 			
+			leaveNativeTitleLayout();
 			game.changeScene(SCENE_ADV, false, %[scenario:"00_z000"]);
 
 			
@@ -556,9 +635,11 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		case btnLoad :
 			PlaySystemVoice("タイトル：ロード");
 
+			leaveNativeTitleLayout();
 			CallLoadSave(true, null, true);
 			break;
 case btnContinue :
+			leaveNativeTitleLayout();
 			game.changeScene(SCENE_ADV, false, %[file:"asave.bmp"]);
 
 			setTransitionCompleteCall(close);
@@ -569,6 +650,7 @@ case btnContinue :
 		case btnConfig :
 			PlaySystemVoice("タイトル：コンフィグ");
 
+			leaveNativeTitleLayout();
 			CallConfig();
 			break;
 		case btnBonus :
@@ -579,6 +661,7 @@ case btnContinue :
 
 			hitThresholdSelectItems(256);
 
+			leaveNativeTitleLayout();
 			game.changeScene(SCENE_ALBUM);
 
 			//StopBgm(5000);
@@ -590,6 +673,7 @@ case btnContinue :
 		case btnMusic :
 			hitThresholdSelectItems(256);
 
+			leaveNativeTitleLayout();
 			game.changeScene(SCENE_MUSIC);
 
 			StopBgm(5000);
@@ -601,6 +685,7 @@ case btnContinue :
 		case btnMemories :
 			hitThresholdSelectItems(256);
 
+			leaveNativeTitleLayout();
 			game.changeScene(SCENE_MEMORIES);
 
 			//StopBgm(5000);
@@ -611,6 +696,7 @@ case btnContinue :
 			break;
 		case btnEnd :
 			PlaySystemVoice("ゲーム終了：確認");
+			leaveNativeTitleLayout();
 			CallConfirm("要结束游戏吗？", SystemRegister.CONFIRM_END, game.exitGame, endCancel, true);
 			break;
 		}
