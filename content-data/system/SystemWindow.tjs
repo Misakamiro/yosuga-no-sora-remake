@@ -1,0 +1,2798 @@
+﻿
+var SIDE_MENU_BASE_WIDTH = 800;
+var SIDE_MENU_BASE_HEIGHT = 600;
+var LOADSAVE_BASE_WIDTH = 1920;
+var LOADSAVE_BASE_HEIGHT = 1080;
+var LOADSAVE_UI_PATH = "ui_1920/save_load/";
+var LOADSAVE_SLOT_X = [468, 963, 1458];
+var LOADSAVE_SLOT_Y = [114, 433, 759];
+
+function GetSideMenuScale(){
+	return (WINDOW_HEIGHT * 100) \ SIDE_MENU_BASE_HEIGHT;
+}
+function GetSideMenuScaledWidth(){
+	return (SIDE_MENU_BASE_WIDTH * GetSideMenuScale()) \ 100;
+}
+function ScaleSideMenuValue(v){
+	return (int(v) * GetSideMenuScale()) \ 100;
+}
+function LoadSaveUiFile(file){
+	return LOADSAVE_UI_PATH + file;
+}
+function GetLoadSaveScale(){
+	return (WINDOW_HEIGHT * 100) \ LOADSAVE_BASE_HEIGHT;
+}
+function GetLoadSaveScaledWidth(){
+	return (LOADSAVE_BASE_WIDTH * GetLoadSaveScale()) \ 100;
+}
+function ScaleLoadSaveValue(v){
+	return (int(v) * GetLoadSaveScale()) \ 100;
+}
+function SetupSideMenuWindow(obj, color=void){
+	obj.zoom = 100;
+	obj.setPos(0, 0);
+	obj.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	obj.fillRect(0, 0, obj.width, obj.height, 0);
+	if(color !== void)
+		obj.fillRect(0, 0, GetSideMenuScaledWidth(), WINDOW_HEIGHT, color);
+}
+function SetupLoadSaveWindow(obj, color=void){
+	obj.zoom = 100;
+	obj.setPos(0, 0);
+	obj.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	obj.fillRect(0, 0, obj.width, obj.height, 0);
+	if(color !== void)
+		obj.fillRect(0, 0, obj.width, obj.height, color);
+}
+function ScaleSideMenuLayerImage(obj){
+	if(GetSideMenuScale() == 100) return;
+	if(obj.imageWidth <= 0 || obj.imageHeight <= 0) return;
+
+	var src = new global.Layer(obj.window, obj.parent);
+	src.assignImages(obj);
+
+	var iw = obj.imageWidth;
+	var ih = obj.imageHeight;
+	var w = obj.width;
+	var h = obj.height;
+	var sw = ScaleSideMenuValue(iw);
+	var sh = ScaleSideMenuValue(ih);
+
+	obj.setImageSize(sw, sh);
+	obj.setSize(ScaleSideMenuValue(w), ScaleSideMenuValue(h));
+	obj.stretchCopy(0, 0, sw, sh, src, 0, 0, iw, ih, stFastLinear);
+
+	invalidate src;
+}
+function ScaleLoadSaveLayerImage(obj){
+	if(GetLoadSaveScale() == 100) return;
+	if(obj.imageWidth <= 0 || obj.imageHeight <= 0) return;
+
+	var src = new global.Layer(obj.window, obj.parent);
+	src.assignImages(obj);
+
+	var iw = obj.imageWidth;
+	var ih = obj.imageHeight;
+	var w = obj.width;
+	var h = obj.height;
+	var sw = ScaleLoadSaveValue(iw);
+	var sh = ScaleLoadSaveValue(ih);
+
+	obj.setImageSize(sw, sh);
+	obj.setSize(ScaleLoadSaveValue(w), ScaleLoadSaveValue(h));
+	obj.stretchCopy(0, 0, sw, sh, src, 0, 0, iw, ih, stFastLinear);
+
+	invalidate src;
+}
+function LoadSideMenuScaledLayer(win, par, file){
+	var img = new global.Layer(win, par);
+	img.loadImages(file);
+	img.setSizeToImageSize();
+	ScaleSideMenuLayerImage(img);
+	return img;
+}
+function LoadLoadSaveScaledLayer(win, par, file){
+	var img = new global.Layer(win, par);
+	img.loadImages(file);
+	img.setSizeToImageSize();
+	ScaleLoadSaveLayerImage(img);
+	return img;
+}
+class SideMenuRoot extends Sprite{
+	var _owner;
+	var _editComment;
+	var _imgBtnL;
+	var _imgBtnS;
+	var _imgJump;
+
+	function SideMenuRoot(win, par, owner=null){
+		Sprite(...);
+		_owner = owner;
+		hasImage = true;
+		setSize(GetSideMenuScaledWidth(), WINDOW_HEIGHT);
+		fillRect(0, 0, GetSideMenuScaledWidth(), WINDOW_HEIGHT, 0);
+		setAffineOffset(0, 0);
+		zoom = 100;
+		setPos(0, 0);
+		hitThreshold = 0;
+		visible = true;
+	}
+	function onButtonDownL(target){
+		if(_owner !== null && typeof _owner.onButtonDownL != "undefined") _owner.onButtonDownL(target);
+	}
+	function onButtonDownR(target){
+		if(_owner !== null && typeof _owner.onButtonDownR != "undefined") _owner.onButtonDownR(target);
+	}
+	function onButtonEnter(target){
+		if(_owner !== null && typeof _owner.onButtonEnter != "undefined") _owner.onButtonEnter(target);
+	}
+	function onButtonLeave(target){
+		if(_owner !== null && typeof _owner.onButtonLeave != "undefined") _owner.onButtonLeave(target);
+	}
+	function onButtonUp(target){
+		if(_owner !== null && typeof _owner.onButtonUp != "undefined") _owner.onButtonUp(target);
+	}
+	function onSliderEnter(target){
+		if(_owner !== null && typeof _owner.onSliderEnter != "undefined") _owner.onSliderEnter(target);
+	}
+	function onSliderLeave(target){
+		if(_owner !== null && typeof _owner.onSliderLeave != "undefined") _owner.onSliderLeave(target);
+	}
+	function onSliderMove(target, key=false){
+		if(_owner !== null && typeof _owner.onSliderMove != "undefined") _owner.onSliderMove(target, key);
+	}
+	function onSliderMoveStart(target){
+		if(_owner !== null && typeof _owner.onSliderMoveStart != "undefined") _owner.onSliderMoveStart(target);
+	}
+	function onSliderMoveEnd(target){
+		if(_owner !== null && typeof _owner.onSliderMoveEnd != "undefined") _owner.onSliderMoveEnd(target);
+	}
+	function onEditControlOk(target){
+		if(_owner !== null && typeof _owner.onEditControlOk != "undefined") _owner.onEditControlOk(target);
+	}
+	function onEditControlEnter(target){
+		if(_owner !== null && typeof _owner.onEditControlEnter != "undefined") _owner.onEditControlEnter(target);
+	}
+	function onEditControlLeave(target){
+		if(_owner !== null && typeof _owner.onEditControlLeave != "undefined") _owner.onEditControlLeave(target);
+	}
+	function onListboxSelect(target){
+		if(_owner !== null && typeof _owner.onListboxSelect != "undefined") _owner.onListboxSelect(target);
+	}
+	function onJumpButtonEnter(target){
+		if(_owner !== null && typeof _owner.onJumpButtonEnter != "undefined") _owner.onJumpButtonEnter(target);
+	}
+	function onJumpButtonLeave(target){
+		if(_owner !== null && typeof _owner.onJumpButtonLeave != "undefined") _owner.onJumpButtonLeave(target);
+	}
+	function onJumpButtonDown(target){
+		if(_owner !== null && typeof _owner.onJumpButtonDown != "undefined") _owner.onJumpButtonDown(target);
+	}
+}
+function CreateSideMenuRoot(win, parent, owner=null){
+	return new SideMenuRoot(win, parent, owner);
+}
+function CreateLoadSaveRoot(win, parent, owner=null){
+	var root = new SideMenuRoot(win, parent, owner);
+	root.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	root.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+	return root;
+}
+function ApplySideMenuScale(obj){
+	obj.zoom = (WINDOW_HEIGHT * 100) \ SIDE_MENU_BASE_HEIGHT;
+	obj.setPos(0, 0);
+}
+function LoadSaveSlotX(index){
+	return ScaleLoadSaveValue(LOADSAVE_SLOT_X[index%3]);
+}
+function LoadSaveSlotY(index){
+	return ScaleLoadSaveValue(LOADSAVE_SLOT_Y[index\3]);
+}
+function LoadSaveDisplayDate(realDate="", gameDate=""){
+	var text = gameDate != "" ? gameDate : realDate;
+	var pos = text.indexOf("_");
+	if(pos >= 0) text = text.substr(0, pos);
+	return text;
+}
+
+class HistoryJumpCoordinator{
+	var _adv = null;
+	var _param = null;
+	var _requestId = 0;
+	var _scheduledRequestId = 0;
+	var _retryCount = 0;
+
+	function request(adv, param){
+		clear();
+
+		_adv = adv;
+		_param = %[];
+		(Dictionary.assignStruct incontextof _param)(param);
+		_requestId++;
+		_retryCount = 0;
+	}
+	function closeHistory(){
+		HistoryDelete();
+		scheduleCommit();
+	}
+	function scheduleCommit(){
+		_scheduledRequestId = _requestId;
+		OnceCall(HistoryJumpCommit, 30, "history-log-jump");
+	}
+	function commit(){
+		if(_scheduledRequestId != _requestId) return;
+		if(_adv === null || _param === null){
+			clear();
+			return;
+		}
+		if(!isvalid _adv){
+			clear();
+			return;
+		}
+		if(SPR_HISTORY !== null || IsShowConfirm() || IsLoadProccesing()){
+			retryOrCancel();
+			return;
+		}
+
+		if(_adv.jump(ADVScreen.JUMPSTATE_NORMAL, _param)){
+			clear();
+		}else{
+			retryOrCancel();
+		}
+	}
+	function retryOrCancel(){
+		_retryCount++;
+		if(_retryCount > 200){
+			dm("history log jump canceled: ADV did not become ready");
+			clear();
+			return;
+		}
+		scheduleCommit();
+	}
+	function clear(){
+		_adv = null;
+		_param = null;
+		_scheduledRequestId = 0;
+		_retryCount = 0;
+		_requestId++;
+		OnceCallCancel("history-log-jump");
+	}
+	function isPending(){
+		return (_adv !== null && _param !== null);
+	}
+}
+var HISTORY_JUMP = new HistoryJumpCoordinator();
+function HistoryJumpClose(){
+	HISTORY_JUMP.closeHistory();
+}
+function HistoryJumpCommit(){
+	HISTORY_JUMP.commit();
+}
+function IsHistoryJumpPending(){
+	return HISTORY_JUMP.isPending();
+}
+
+class SavedataHeader extends SelectItemGroupSprite{
+	var _imgNumber;
+
+	var _type;
+	var _number;
+	var _realDate;
+	var _gameDate;
+	var _comment;
+	var _thumb;
+	var _root;
+	var _commentEdit;
+
+	var _btn = [];
+	var _sprNumber;
+	var _sprRealDate;
+	var _sprGameDate;
+	var _sprComment;
+	var _sprThumb;
+	var _sprRoot;
+
+	var _messOver = false;
+	var _scrollTimer;
+	var _scrollX = 0;
+
+	function SavedataHeader(win, par, fLoad=true){
+		super.SelectItemGroupSprite(win, par);
+
+		_btn[0] = new Button(win, this);
+		_btn[0].create(IMG_SAVEDATA_BTN[fLoad?0:1], 2);
+		_btn[0].ptnInvalid = 0;
+
+		_sprThumb = new global.Layer(win, this);
+		with(_sprThumb){
+			.setSize(IMG_SAVEDATA_ALPHA.width, IMG_SAVEDATA_ALPHA.height);
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(107), ScaleLoadSaveValue(16));
+			.face = dfMask;
+			.copyRect(0, 0, IMG_SAVEDATA_ALPHA, 0, 0, IMG_SAVEDATA_ALPHA.width, IMG_SAVEDATA_ALPHA.height);
+			.holdAlpha = true;
+			.face = dfMain;			//以後、メインのコピだけ。
+			.fillRect(0, 0, .width, .height, 0);
+		}
+
+		_sprRoot = new global.Layer(win, this);
+		with(_sprRoot){
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(16), ScaleLoadSaveValue(44));
+			.visible = true;
+		}
+
+		hasImage = true;
+		setSize(_btn[0].width, _btn[0].height);
+		copyRect(0, 0, IMG_SAVEDATA_BASE[fLoad?0:1], 0, 0, IMG_SAVEDATA_BASE[fLoad?0:1].width, IMG_SAVEDATA_BASE[fLoad?0:1].height);
+
+		_imgNumber = IMG_SAVEDATA_NUM;
+
+		_sprGameDate = new global.Layer(win, this);
+		with(_sprGameDate){
+			.setSize(ScaleLoadSaveValue(130), ScaleLoadSaveValue(28));
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(280), ScaleLoadSaveValue(230));
+			.font.height = ScaleLoadSaveValue(21);
+			.visible = true;
+		}
+		_sprComment = new global.Layer(win, this);
+		with(_sprComment){
+			.setSize(ScaleLoadSaveValue(370), ScaleLoadSaveValue(32));
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(14), ScaleLoadSaveValue(197));
+//			.font.face = GetFontFace("24");
+			.absolute = 1000;
+			.visible = true;
+		}
+
+		_sprNumber = new global.Layer(win, this);
+		with(_sprNumber){
+			.setSize(ScaleLoadSaveValue(100), ScaleLoadSaveValue(36));
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(14), ScaleLoadSaveValue(15));
+			.visible = true;
+		}
+		_sprRealDate = new global.Layer(win, this);
+		with(_sprRealDate){
+			.setSize(ScaleLoadSaveValue(164), ScaleLoadSaveValue(18));
+			.hitThreshold = 256;
+			.setPos(ScaleLoadSaveValue(2), ScaleLoadSaveValue(102));
+			.font.height = ScaleLoadSaveValue(15);
+			.visible = false;
+		}
+
+		_btn[1] = new ControlButton(win, this);
+		_btn[1].create(IMG_SAVEDATA_COM, 2);
+		_btn[1].setPos(ScaleLoadSaveValue(390), ScaleLoadSaveValue(203));
+		_btn[2] = new ControlButton(win, this);
+		_btn[2].create(IMG_SAVEDATA_COPY, 2);
+		_btn[2].setPos(ScaleLoadSaveValue(15), ScaleLoadSaveValue(106));
+		_btn[3] = new ControlButton(win, this);
+		_btn[3].create(IMG_SAVEDATA_MOVE, 2);
+		_btn[3].setPos(ScaleLoadSaveValue(15), ScaleLoadSaveValue(143));
+		_btn[4] = new ControlButton(win, this);
+		_btn[4].create(IMG_SAVEDATA_DEL, 2);
+		_btn[4].setPos(ScaleLoadSaveValue(15), ScaleLoadSaveValue(69));
+		_btn[5] = new ControlToggleButton(win, this);
+		_btn[5].create(IMG_SAVEDATA_LOCK, 4);
+		_btn[5].setPos(ScaleLoadSaveValue(18), ScaleLoadSaveValue(236));
+		_btn[5].ptnNormalA <-> _btn[5].ptnNormalB;
+		_btn[5].ptnFocusA <-> _btn[5].ptnFocusB;
+		_btn[5].ptnInvalidA <-> _btn[5].ptnInvalidB;
+		for(var i=1;i<_btn.count;i++) _btn[i].visible = false;
+
+		_scrollTimer = new Timer(onScrollComment, "");
+		_scrollTimer.interval = 24;
+	}
+	function finalize(){
+		InvalidateArray(_btn);
+		invalidate _sprNumber;
+		invalidate _sprGameDate;
+		invalidate _sprRealDate;
+		invalidate _sprComment;
+		invalidate _sprThumb;
+		invalidate _sprRoot;
+		invalidate _scrollTimer;
+		super.finalize();
+	}
+
+	function set(type=0, no, realDate, gameDate, comment, thumb, root, commentEdit){
+		reset();
+		_type = type;
+		_number = no;
+		_realDate = realDate;
+		_gameDate = gameDate;
+		_comment = comment;
+		_thumb = thumb;
+		_root = root;
+		_commentEdit = commentEdit;
+	}
+
+	function setupInfo(){
+		if(_number != -1){
+			var book = (_number-1) \ 90;
+			var num = (_number - book*90) % 91;
+			book++;
+
+			_sprNumber.fillRect(0, 0, _sprNumber.width, _sprNumber.height, 0);
+			_sprNumber.font.face = FONT_DEFAULT_FACE;
+			_sprNumber.font.height = ScaleLoadSaveValue(28);
+			_sprNumber.drawText(0, 0, "%02d-%02d".sprintf(book, num), 0xffffff, 255, true, 1024, 0x2b84a0, ScaleLoadSaveValue(2));
+			_sprNumber.visible = true;
+		}else{
+			_sprNumber.visible = false;
+		}
+
+		with(_sprGameDate){
+			var dateText = LoadSaveDisplayDate(_realDate, _gameDate);
+			if(dateText != ""){
+				.fillRect(0, 0, .width, .height, 0);
+				.font.face = FONT_DEFAULT_FACE;
+				.font.height = ScaleLoadSaveValue(21);
+				.drawText(.width - .font.getTextWidth(dateText), ScaleLoadSaveValue(1), dateText, 0xffffff, 255, true, 1024, 0x2b84a0, ScaleLoadSaveValue(1));
+				.visible = true;
+			}else{
+				.visible = false;
+			}
+		}
+
+		_sprComment.font.face = FONT_DEFAULT_FACE;
+		_sprComment.font.height = ScaleLoadSaveValue(23);
+		drawComment(0);
+		_sprComment.visible = true;
+
+		_sprRealDate.visible = false;
+
+		var w = _sprComment.font.getTextWidth(_comment);
+		if(_sprComment.width < w){
+			_messOver = true;
+		}else{
+			_messOver = false;
+		}
+
+		with(_sprRoot){
+			if(_root){
+				.assignImages(IMG_SAVEDATA_CHAR[_root-1]);
+				.setSizeToImageSize();
+				ScaleLoadSaveLayerImage(_sprRoot);
+				.visible = true;
+			}else{
+				.visible = false;
+			}
+		}
+	}
+
+	function setupThumb(){
+		var img = new global.Layer(window, this);
+		try{
+			_sprThumb.fillRect(0, 0, _sprThumb.width, _sprThumb.height, 0);
+			var loaded = false;
+			if(_thumb !== void && _thumb != ""){
+				if(Storages.isExistentStorage(DATA_PATH + _thumb)){
+					img.loadImages(DATA_PATH + _thumb);
+					loaded = true;
+				}else if(Storages.isExistentStorage(_thumb)){
+					img.loadImages(_thumb);
+					loaded = true;
+				}else if(Storages.isExistentStorage("savedata/" + _thumb)){
+					img.loadImages("savedata/" + _thumb);
+					loaded = true;
+				}
+			}
+			if(!loaded) img.loadImages(LoadSaveUiFile("thumbnail_empty.png"));
+			img.setSizeToImageSize();
+			_sprThumb.stretchCopy(0, 0, _sprThumb.width, _sprThumb.height, img, 0, 0, img.width, img.height, stFastLinear);
+			_sprThumb.visible = true;
+		}catch(e){
+			dm("savedata thumb failed: " + e);
+			_sprThumb.visible = false;
+		}
+		invalidate img;
+	}
+
+	function reset(){
+		_sprNumber.fillRect(0, 0, _sprNumber.width, _sprNumber.height, 0);
+		_sprRealDate.fillRect(0, 0, _sprRealDate.width, _sprRealDate.height, 0);
+		_sprComment.fillRect(0, 0, _sprComment.width, _sprComment.height, 0);
+		_sprThumb.fillRect(0, 0, _sprThumb.width, _sprThumb.height, 0);
+		_sprThumb.visible = false;
+		_btn[0].visible = false;
+		_sprRoot.visible = false;
+	}
+
+	function onButtonDownL(target){
+		parent.onButtonDownL(this);
+	}
+
+	function onButtonEnter(target){
+//		if(typeof parent.parent._editComment != "undefined"){
+//			if(parent.parent._editComment.visible) return;
+//		}
+
+		if(_messOver){
+			_scrollTimer.enabled = true;
+		}
+
+		if(lock){
+			_btn[5].opacity = 255;
+			return;
+		}
+
+		for(var i=1;i<_btn.count;i++) _btn[i].opacity = 255;
+
+		if(_type != 0){
+			for(var i=1;i<_btn.count;i++){
+				_btn[i].visible = false;
+			}
+		}
+	}
+	function onButtonLeave(target){
+		for(var i=1;i<_btn.count;i++) _btn[i].opacity = 0;
+
+		if(_messOver){
+			_scrollX = 0;
+			drawComment(0);
+			_scrollTimer.enabled = false;
+		}
+	}
+	function onScrollComment(){
+		var w = _sprComment.font.getTextWidth(_comment);
+		drawComment(_scrollX);
+
+		_scrollX += ScaleLoadSaveValue(2);
+		if(-_scrollX < -w){
+			_scrollX = -_sprComment.width;
+		}
+	}
+
+	function drawComment(x){
+		_sprComment.fillRect(0, 0, _sprComment.width, _sprComment.height, 0);
+		var e = DEF_FONT_STYLE;
+		var ratio = (_sprComment.height - _sprComment.font.height) \ 2;
+
+		var col = e.color;
+		if(_commentEdit) col = 0x7fffcf;
+
+		_sprComment.drawText(-x + ScaleLoadSaveValue(2), ratio + ScaleLoadSaveValue(1), _comment, col, e.opa, e.aa, e.shadowlevel, 0x000000, ScaleLoadSaveValue(1), e.shadowx, e.shadowy);
+	}
+
+	function validButton(f){
+		_btn[0].visible = true;
+		_btn[0].valid = f;
+
+		//ボタンの有無でコメントレイヤの親を切り替える
+		if(_btn[0].visible){
+			_sprComment.parent = _btn[0];
+			_sprComment.absolute = _btn[1].absolute - 1;
+		}else{
+			_sprComment.parent = this;
+		}
+	}
+
+	function validControlButton(f){
+		for(var i=1;i<_btn.count;i++){
+			_btn[i].valid = f;
+			_btn[i].visible = f;
+		}
+	}
+
+	property lock{
+		getter(){return (_btn[5].state != 0);}
+		setter(v){
+			_btn[5].state = v?1:0;
+			var hoge = [1, 2, 3, 4];
+			for(var i=0;i<hoge.count;i++){
+				_btn[hoge[i]].opacity = _btn[5].state?0:255;
+				_btn[hoge[i]].valid = _btn[5].state?false:true;
+				_btn[hoge[i]].visible = _btn[5].state?false:true;
+			}
+		}
+	}
+
+	class ControlButton extends Button{
+		function ControlButton(win, par){
+			super.Button(...);
+		}
+
+		function onMouseEnter(x, y, shift){
+			super.onMouseEnter(...);
+			parent.onMouseEnter(...);
+		}
+		function onMouseLeave(x, y, shift){
+			super.onMouseLeave(...);
+			parent.onMouseLeave(...);
+		}
+
+		function onMouseDown(x, y, button, shift){
+			releaseCapture();
+			if((button == mbLeft) && _valid){
+				if(typeof parent.parent.parent.onButtonDownL != "undefined")
+					parent.parent.parent.onButtonDownL(this);
+			}else if((button == mbRight)){
+				if(typeof parent.parent.parent.onButtonDownR != "undefined")
+					parent.parent.parent.onButtonDownR(this);
+			}
+		}
+	}
+	class ControlToggleButton extends ToggleButton{
+		function ControlToggleButton(win, par){
+			super.ToggleButton(...);
+		}
+
+		function onMouseEnter(x, y, shift){
+			super.onMouseEnter(...);
+			parent.onMouseEnter(...);
+		}
+		function onMouseLeave(x, y, shift){
+			super.onMouseLeave(...);
+			parent.onMouseLeave(...);
+		}
+
+		function onMouseDown(x, y, button, shift){
+			releaseCapture();
+			state = !state;
+			if((button == mbLeft) && _valid){
+				if(typeof parent.parent.parent.onButtonDownL != "undefined")
+					parent.parent.parent.onButtonDownL(this);
+			}else if((button == mbRight)){
+				if(typeof parent.parent.parent.onButtonDownR != "undefined")
+					parent.parent.parent.onButtonDownR(this);
+			}
+		}
+	}
+}
+
+var IMG_SAVEDATA_TAG1 = null;
+var IMG_SAVEDATA_TAG2 = null;
+
+class LoadSaveWindow extends SettingWindowBase{
+	var DATASELECT_NONE = 0;
+	var DATASELECT_COPY = 1;
+	var DATASELECT_MOVE = 2;
+	var DATASELECT_SWAP = 3;
+
+	var _fFromTitle;
+	var _fLoad;
+	var _adv;
+
+	var _menuRoot;
+	var _base;
+	var _book = [];
+	var _bookGroup;
+	var _page = [];
+	var _pageTemp = [];
+	var _pageGroup;
+	var _save = [];
+	var _new;
+	var _newPage;
+	var _btnMode;
+	var _btnClose;
+
+	var _savePrev;
+	var _savePrevTag;
+
+	var _editComment;
+	var _editType = 0;
+	var _editBook = 0;
+	var _editPage = 0;
+
+	var _bookNo = -1;
+	var _pageNo = -1;
+	var _targetNo = -1;
+	var _dstTargetNo = -1;
+	var _targetFile = "";
+
+	var _dataSelectMode = DATASELECT_NONE;
+
+	var FILELIST = %[
+		FRM_0301 : [LoadSaveUiFile("background_load.png"), LoadSaveUiFile("background_load.png")],
+		FRM_0302 : [LoadSaveUiFile("background_save.png"), LoadSaveUiFile("background_save.png")],
+		FRM_0303 : [LoadSaveUiFile("slot_base.png"), LoadSaveUiFile("slot_base.png")],
+		FRM_0304 : ["FRM_0304" , "FRM_0304"],
+		FRM_0305 : [LoadSaveUiFile("thumbnail_empty.png"), LoadSaveUiFile("thumbnail_empty.png")],
+		FRM_0306 : [LoadSaveUiFile("slot_button.png"), LoadSaveUiFile("slot_button.png")],
+		FRM_0307 : [LoadSaveUiFile("new_marker.png"), LoadSaveUiFile("new_marker.png")],
+		FRM_0308 : ["FRM_0308" , "FRM_0308"],
+		FRM_0309 : ["FRM_0309" , "FRM_0309"],
+		FRM_0311 : ["FRM_0311" , "FRM_0311"], 
+		FRM_0312 : ["FRM_0312" , "FRM_0312"], 
+		FRM_0313 : ["FRM_0313" , "FRM_0313"], 
+		FRM_0314 : ["FRM_0314" , "FRM_0314"], 
+		FRM_0315 : ["FRM_0315" , "FRM_0315"], 
+		FRM_0321 : [LoadSaveUiFile("book_tab.png"), LoadSaveUiFile("book_tab.png")],
+		FRM_0322 : [LoadSaveUiFile("page_tab.png"), LoadSaveUiFile("page_tab.png")],
+		FRM_0341 : ["FRM_0341", "FRM_0341"],
+		FRM_0342 : ["FRM_0342", "FRM_0342"],
+		FRM_0343 : [LoadSaveUiFile("button_copy.png"), LoadSaveUiFile("button_copy.png")],
+		FRM_0344 : [LoadSaveUiFile("button_move.png"), LoadSaveUiFile("button_move.png")],
+		FRM_0345 : [LoadSaveUiFile("button_delete.png"), LoadSaveUiFile("button_delete.png")],
+		FRM_0346 : [LoadSaveUiFile("button_lock.png"), LoadSaveUiFile("button_lock.png")],
+		FRM_1101 : [LoadSaveUiFile("button_close.png"), LoadSaveUiFile("button_close.png")]
+	];
+
+	function LoadSaveWindow(win, par, fExclusive=true, fFromeTitle=false){
+		super.SettingWindowBase(...);
+		mouseTrackingMode = global.ChainItemBase.MOUSETRACKINGMODE_FREE;
+
+		_fFromTitle = fFromeTitle;
+	}
+	function finalize(){
+		sysReg._closeSaveMenuIndex = _bookNo*10 + _pageNo;
+
+		resetImages();
+
+		window.editControlLeave();
+
+		super.finalize();
+	}
+	function who(){return "LoadSaveWindow";}
+
+	function resetImages(){
+		InvalidateArray(_book);
+		_book.clear();
+		InvalidateArray(_page);
+		_page.clear();
+		InvalidateArray(_save);
+		_save.clear();
+
+		invalidate _btnClose;
+		invalidate _btnMode;
+		invalidate _savePrev;
+		invalidate _savePrevTag;
+		invalidate _editComment;
+		invalidate _bookGroup;
+		invalidate _pageGroup;
+		invalidate _new;
+		invalidate _newPage;
+		invalidate _base;
+		invalidate _menuRoot;
+
+		invalidate IMG_SAVEDATA_TAG1;
+		IMG_SAVEDATA_TAG1 = null;
+		invalidate IMG_SAVEDATA_TAG2;
+		IMG_SAVEDATA_TAG2 = null;
+	}
+
+	function create(fLoad=true, func=null){
+		_fLoad = fLoad;
+		_adv = func;
+
+		SetupLoadSaveWindow(this);
+		absolute = LAYER_LOADSAVE;
+		_menuRoot = CreateLoadSaveRoot(window, this, this);
+
+		IMG_SAVEDATA_TAG1 = new global.Layer(window, _menuRoot);
+		with(IMG_SAVEDATA_TAG1){
+			.loadImages(getFilename("FRM_0321", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_TAG1);
+		IMG_SAVEDATA_TAG2 = new global.Layer(window, _menuRoot);
+		with(IMG_SAVEDATA_TAG2){
+			.loadImages(getFilename("FRM_0322", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_TAG2);
+		with(IMG_SAVEDATA_BASE[fLoad?0:1]){
+			.loadImages(getFilename("FRM_0303", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_BASE[fLoad?0:1]);
+		with(IMG_SAVEDATA_BTN[fLoad?0:1]){
+			.loadImages(getFilename("FRM_0306", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_BTN[fLoad?0:1]);
+		with(IMG_SAVEDATA_NUM){
+			.loadImages("FRM_0304");
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_NUM);
+		with(IMG_SAVEDATA_ALPHA){
+			.loadImages(getFilename("FRM_0305", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_ALPHA);
+		with(IMG_SAVEDATA_COM){
+			.loadImages(getFilename("FRM_0341", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_COM);
+		with(IMG_SAVEDATA_COPY){
+			.loadImages(getFilename("FRM_0343", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_COPY);
+		with(IMG_SAVEDATA_MOVE){
+			.loadImages(getFilename("FRM_0344", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_MOVE);
+		with(IMG_SAVEDATA_DEL){
+			.loadImages(getFilename("FRM_0345", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_DEL);
+		with(IMG_SAVEDATA_LOCK){
+			.loadImages(getFilename("FRM_0346", _fLoad));
+			.setSizeToImageSize();
+		}
+		ScaleLoadSaveLayerImage(IMG_SAVEDATA_LOCK);
+
+		_base = new global.SelectItemGroupLayer(window, _menuRoot);
+		with(_base){
+			.hasImage = true;
+			if(fLoad)	.loadImages(getFilename("FRM_0301", _fLoad));
+			else		.loadImages(getFilename("FRM_0302", _fLoad));
+			.setSizeToImageSize();
+			ScaleLoadSaveLayerImage(_base);
+			.setPos(0, 0);
+
+			.visible = true;
+		}
+
+		removeChainItemAll();
+
+		_bookGroup = new RadioButtonGroup();
+		for(var i=0;i<SAVEDATA_BOOK_MAX+1;i++){
+			_book[i] = new Tag(window, _base, _fLoad);
+			with(_book[i]){
+				.create(0, "%02d".sprintf(i+1));
+				.visible = true;
+			}
+			_bookGroup.add(_book[i]._btn);
+			addChainItem(_book[i]._btn);
+			_pageTemp[i] = 0;
+		}
+		_book[_book.count-1].setTagName("快速存档");
+		_book[_book.count-1]._btnEdit.visible = false;
+		if(!_fLoad){
+			_book[_book.count-1].valid = false;
+			_book[_book.count-1].visible = false;
+			_book[_book.count-1].opacity = 128;
+			_bookGroup.remove(_book[_book.count-1]);
+			removeChainItem(_book[_book.count-1]._btn);
+		}
+
+		_pageGroup = new RadioButtonGroup();
+		for(var i=0;i<10;i++){
+			_page[i] = new Tag(window, _base, _fLoad);
+			with(_page[i]){
+				.create(1, "%02d".sprintf(i+1));
+				.setPos(ScaleLoadSaveValue(112), ScaleLoadSaveValue(195 + 65*i));
+			}
+			_pageGroup.add(_page[i]._btn);
+			addChainItem(_page[i]._btn);
+		}
+
+		for(var i=0;i<9;i++){
+			_save[i] = new SavedataHeader(window, _base, _fLoad);
+			with(_save[i]){
+				.setPos(LoadSaveSlotX(i), LoadSaveSlotY(i));
+				.visible = true;
+			}
+			addChainItem(_save[i]._btn[0]);
+		}
+
+		_savePrev = new SavedataHeader(window, _menuRoot);
+		_savePrevTag = new global.Layer(window, _menuRoot);
+
+		_new = new global.Layer(win, _menuRoot);
+		with(_new){
+			.loadImages(getFilename("FRM_0307", _fLoad));
+			.setSizeToImageSize();
+			ScaleLoadSaveLayerImage(_new);
+			.hitThreshold = 256;
+		}
+		_newPage = new global.Sprite(win, _menuRoot);
+		with(_newPage){
+			.loadImages(getFilename("FRM_0307", _fLoad));
+			.setSizeToImageSize();
+			.setCenter(0, .height);
+			.setPos(_base.left+_book[0].left, _base.top+_book[0].top);
+			.hitThreshold = 256;
+		}
+
+		var book = sysReg._closeSaveMenuIndex\10;
+		var page = sysReg._closeSaveMenuIndex%10;
+		_bookGroup.on(_book[book]._btn);
+		_pageGroup.on(_page[page]._btn);
+
+		_editComment = new EditLayer(window, _menuRoot);
+		with(_editComment){
+			.font.face = FONT_DEFAULT_FACE;
+			.bgOpacity = 128;
+			.maxChars = 64;
+		}
+		_menuRoot._editComment = _editComment;
+
+/*
+		if(!_fFromTitle){
+			_btnMode = new ToggleButton(window, this);
+			with(_btnMode){
+				.create(getFilename("FRM_0309", _fLoad), 4);
+				.setPos(0, 0);
+				.state = _fLoad ? 1 : 0;
+			}
+			addChainItem(_btnMode);
+		}
+*/
+
+		_btnClose = new Button(window, _menuRoot);
+		var imgClose = LoadLoadSaveScaledLayer(window, _menuRoot, getFilename("FRM_1101", _fLoad));
+		_btnClose.create(imgClose, 2);
+		_btnClose.setPos(ScaleLoadSaveValue(1851), ScaleLoadSaveValue(59));
+		invalidate imgClose;
+		addChainItem(_btnClose);
+
+		if(!_fLoad && book == _book.count-1) book = 0;
+		setPage(book, page);
+		visible = true;
+	}
+
+	function setPage(book, page, preview=false){
+		var prevBook = _bookNo;
+		if(!preview){
+			_bookNo = book;
+			_pageNo = _pageTemp[_bookNo] = page;
+
+			_bookGroup.on(_book[book]._btn);
+			_pageGroup.on(_page[page]._btn);
+		}
+		if(isQSavePage()){
+			setBookPageTag(150);
+			setPageQ(preview);
+			return;
+		}
+
+		for(var i=0;i<_page.count;i++) _page[i].visible = true;
+
+		var index = book * SAVEDATA_PAGEDATA_MAX + page * SAVEDATA_PAGE_NUM;
+		for(var i=0;i<9;i++){
+			with(_save[i]){
+				var obj = saveMan.at(index+i);
+				.reset();
+
+				if(obj.valid){
+					.set(0, index+i+1, obj.realDate, obj.gameDate, obj.comment, obj.file, obj.root, obj.comment_edit);
+				}else{
+					.set(1, index+i+1);
+				}
+				.setupInfo();
+
+				if(_fLoad && obj.valid == 0){
+					.setupThumb();
+					.validControlButton(false);
+					.validButton(false);
+				}else{
+					if(obj.valid){
+						.setupThumb();
+						.validControlButton(true);
+					}else{
+						.setupThumb();
+						.validControlButton(false);
+					}
+					.validButton(true);
+				}
+				if(preview) .opacity = 128;
+				else		.opacity = 255;
+
+				.lock = obj.lock;
+			}
+		}
+
+		setBookPageTag(prevBook!=book?150:0);
+		setNewSaveMark();
+		setNewSavePageMark();
+
+		if(_dataSelectMode){
+			for(var i=0;i<_save.count;i++){
+				_save[i].validControlButton(false);
+				var obj = saveMan.at(saveMan.getIndexFromBookIndex(_bookNo, _pageNo, i));
+				if(obj !== void && obj.lock){
+					_save[i].validButton(false);
+				}else{
+					_save[i].validButton(true);
+				}
+			}
+		}
+		for(var i=0;i<_save.count;i++) _save[i].onButtonLeave();
+
+		removeChainItemAll();
+		if(_fLoad)	for(var i=0;i<SAVEDATA_BOOK_MAX+1;i++) addChainItem(_book[i]._btn);
+		else		for(var i=0;i<SAVEDATA_BOOK_MAX;i++) addChainItem(_book[i]._btn);
+		for(var i=0;i<10;i++) addChainItem(_page[i]._btn);
+		for(var i=0;i<9;i++) addChainItem(_save[i]._btn[0]);
+		addChainItem(_btnClose);
+	}
+	function setPageQ(preview=false){
+		for(var i=0;i<_page.count;i++) _page[i].visible = false;
+
+		for(var i=0;i<_save.count;i++){
+			_save[i].validControlButton(false);
+		}
+
+		var i = 0;
+		for(;i<saveMan.qsaveStack();i++){
+			with(_save[i]){
+				var obj = saveMan.atQSave(i);
+				.reset();
+
+				.set(1, -1, obj.realDate, obj.gameDate, obj.comment, obj.file, obj.root, obj.comment_edit);
+				.setupInfo();
+
+				if(_fLoad && obj.valid == 0){
+					.setupThumb();
+					.validControlButton(false);
+					.validButton(false);
+				}else{
+					.setupThumb();
+					.validButton(true);
+				}
+				if(preview) .opacity = 128;
+				else		.opacity = 255;
+			}
+		}
+		for(;i<9;i++){
+			with(_save[i]){
+				.reset();
+			}
+		}
+		if(saveMan.qsaveStack()){
+			_new.setPos(_base.left+_save[0].left+3, _base.top+_save[0].top+14);
+			_new.visible = true;
+		}else{
+			_new.visible = false;
+		}
+		setNewSavePageMark();
+
+		for(var i=0;i<_save.count;i++) _save[i].onButtonLeave();
+
+		removeChainItemAll();
+		if(_fLoad)	for(var i=0;i<SAVEDATA_BOOK_MAX+1;i++) addChainItem(_book[i]._btn);
+		else		for(var i=0;i<SAVEDATA_BOOK_MAX;i++) addChainItem(_book[i]._btn);
+		for(var i=0;i<9;i++) addChainItem(_save[i]._btn[0]);
+		addChainItem(_btnClose);
+	}
+	function isQSavePage(){return (_bookNo == _book.count - 1);}
+
+	function setBookPageTag(time=0){
+		var bx = ScaleLoadSaveValue(62);
+		var by = ScaleLoadSaveValue(112);
+
+		var book = 0;
+		for(;book<=_bookNo;book++){
+			with(_book[book]){
+				if(time){
+					.setMovingEnvelope(.left, .top, bx, by, 2);
+					.beginActivation(time);
+				}else{
+					.setPos(bx, by, 2);
+				}
+				.setPlacementPos(bx, by);
+
+				by += .height + ScaleLoadSaveValue(8);
+			}
+		}
+		if(_bookNo != SAVEDATA_BOOK_MAX){
+			var px = bx + ScaleLoadSaveValue(50);
+			var py = by;
+			for(var page=0;page<SAVEDATA_PAGE_MAX;page++){
+				with(_page[page]){
+					if(time){
+						.opacity = 0;
+						.setBlendingEnvelope(255);
+						.setMovingEnvelope(px-(ScaleLoadSaveValue(16)+(SAVEDATA_PAGE_MAX-page)*ScaleLoadSaveValue(8)), py, px, py, 2);
+						.beginActivation(time + (page*25));
+					}else{
+						.setPos(px, py);
+					}
+					.setPlacementPos(px, py);
+					py += .height + ScaleLoadSaveValue(10);
+				}
+			}
+			by = py + ScaleLoadSaveValue(4);
+		}
+		for(;book<=SAVEDATA_PAGE_NUM+1;book++){
+			with(_book[book]){
+				if(time){
+					.setMovingEnvelope(.left, .top, bx, by, 2);
+					.beginActivation(time);
+				}else{
+					.setPos(bx, by, 2);
+				}
+				.setPlacementPos(bx, by);
+				by += .height + ScaleLoadSaveValue(8);
+			}
+		}
+
+		for(var i=0;i<SAVEDATA_BOOK_MAX;i++){
+			var obj = saveMan.atBook(i);
+			_book[i].setTagName(obj.bookname);
+			_book[i]._tagName.visible = true;
+			_book[i]._btnEdit.opacity = 0;
+		}
+		if(_bookNo != SAVEDATA_BOOK_MAX){
+			for(var i=0;i<SAVEDATA_PAGE_MAX;i++){
+				var obj = saveMan.atPage(_bookNo, i);
+				_page[i].setTagName(obj.pagename);
+				_page[i]._tagName.visible = true;
+			}
+		}
+	}
+	function setNewSaveMark(){
+		if(sysReg._newSaveNo <= 0){
+			_new.visible = false;
+			return;
+		}
+
+		var index = _bookNo * 90 + _pageNo * 9;
+		for(var i=0;i<9;i++){
+			if(index + i == sysReg._newSaveNo - 1){
+				_new.setPos(_base.left+_save[i].left+ScaleLoadSaveValue(350), _base.top+_save[i].top-ScaleLoadSaveValue(25));
+				_new.visible = true;
+				break;
+			}else{
+				_new.visible = false;
+			}
+		}
+	}
+	function setNewSavePageMark(){
+		if(sysReg._newSaveNo <= 0){
+			_newPage.visible = false;
+			return;
+		}
+
+		var sv = _newPage.visible;
+		var sx = _newPage.left;
+		var sy = _newPage.top;
+		var dx, dy;
+		var dic = saveMan.getBookIndexFromIndex(sysReg._newSaveNo-1);
+		if(_bookNo != dic.book){
+			dx = _base.left+_book[dic.book].px+_book[dic.book].width-_newPage.width\2;
+			dy = _base.top+_book[dic.book].py-ScaleLoadSaveValue(18);
+		}else{
+			dx = _base.left+_page[dic.page].px+_page[dic.page].width-_newPage.width\2;
+			dy = _base.top+_page[dic.page].py-ScaleLoadSaveValue(18);
+		}
+		_newPage.setPos(dx, dy);
+		_newPage.visible = true;
+
+		var dv = _newPage.visible;
+
+		if(sx != dx || sy != dy || sv != dv){
+			with(_newPage){
+				.opacity = 0;
+				.setBlendingEnvelope(255);
+				.setMovingEnvelope(sx, sy, dx, dy, 2);
+				.beginActivation(300);
+			}
+		}
+	}
+
+	function onMouseWheel(shift, delta, x, y){
+		var obj;
+		if(delta < 0){
+			obj = _pageGroup.next();
+		}else if(delta > 0){
+			obj = _pageGroup.prev();
+		}
+		onButtonDownL(obj);
+	}
+
+	function onButtonDownL(target){
+		if(target == _btnMode){
+			var fLoad = _btnMode.state == 1;
+			var book = _bookNo;
+			var page = _pageNo;
+ 			resetImages();
+			create(fLoad, _adv);
+			if(!fLoad && (book == _book.count - 1)){
+				book = page = 0;
+			}
+			setPage(book, page);
+			return;
+		}
+		if(target == _btnClose){
+			cancel();
+			HitThresholdSelectItems(_page, 256);
+			for(var i=0;i<_save.count;i++) _save[i]._btn[0].hitThreshold = 256;
+			hide(300, LoadSaveDelete);
+			return;
+		}
+
+		for(var i=0;i<_book.count;i++){
+			if(target == _book[i] || target == _book[i]._btn){
+				setPage(i, _pageTemp[i]);
+				return;
+			}
+		}
+		for(var i=0;i<_page.count;i++){
+			if(target == _page[i] || target == _page[i]._btn){
+				setPage(_bookNo, i);
+				return;
+			}
+		}
+
+		var type = 0;
+		var iSave = 0;
+		for(;iSave<_save.count;iSave++){
+			if(target == _save[iSave])	break;
+			else if(target == _save[iSave]._btn[1]){type = 1; break;}
+			else if(target == _save[iSave]._btn[2]){type = 2; break;}
+			else if(target == _save[iSave]._btn[3]){type = 3; break;}
+			else if(target == _save[iSave]._btn[4]){type = 4; break;}
+			else if(target == _save[iSave]._btn[5]){type = 5; break;}
+		}
+
+		var iBook = 0;
+		for(;iBook<_book.count;iBook++){
+			if(target == _book[iBook]._btnEdit){type = 6; break;}
+		}
+		var iPage = 0;
+		for(;iPage<_page.count;iPage++){
+			if(target == _page[iPage]._btnEdit){type = 7; break;}
+		}
+
+		var mess1, mess2, mess3;
+		mess1 = mess2 = mess3 = "";
+
+		if(_dataSelectMode){
+			if(iSave >= _save.count) return;
+
+			_dstTargetNo = _bookNo * SAVEDATA_PAGEDATA_MAX + _pageNo * SAVEDATA_PAGE_NUM + iSave;
+
+			switch(_dataSelectMode){
+			case DATASELECT_COPY : 
+				if(CONFIG.confirmWindow[SystemRegister.CONFIRM_COPY])
+					PlaySystemVoice("データコピー：確認");
+
+				CallConfirm("存档复制确认", SystemRegister.CONFIRM_COPY, copyDecide, copyCancel);
+				break;
+			case DATASELECT_MOVE : 
+				if(CONFIG.confirmWindow[SystemRegister.CONFIRM_MOVE])
+					PlaySystemVoice("データ移動：確認");
+
+				CallConfirm("存档移动确认", SystemRegister.CONFIRM_MOVE, moveDecide, moveCancel);
+				break;
+			}
+			dataSelectModeLeave();
+			return;
+		}else{
+			_targetNo = _bookNo * SAVEDATA_PAGEDATA_MAX + _pageNo * SAVEDATA_PAGE_NUM + iSave;
+		}
+
+		var info;
+		var systemVoice = "";
+
+		var book = _targetNo \ 90;
+		var num = (_targetNo - book*90) % 91 + 1;
+		book++;
+
+		_targetFile = "";
+
+		switch(type){
+		case 0 : 
+			var info;
+			if(isQSavePage()){
+				info = saveMan.atQSave(iSave);
+				mess1 = "$c:aquamarine,midnightblue;快速读取$c;确认";
+				mess2 = mess3 = "";
+				_targetFile = info.file;
+			}else{
+				info = saveMan.at(_targetNo);
+				if(info.lock && !_fLoad) break;
+
+				_targetFile = "save" + "%02d_%03d.bmp".sprintf(book, num);
+
+				if(_fLoad)	mess1 = "$c:aquamarine,midnightblue;";
+				else		mess1 = "$c:violet,indygo;";
+				mess2 = "BOOK%02d－%02d号".sprintf(book, num);
+				mess2 = han2zen(mess2);
+				if(_fLoad){
+					if(CONFIG.confirmWindow[SystemRegister.CONFIRM_LOAD])
+						systemVoice = "ロード：確認";
+					mess3 += "$c;存档读取确认";
+				}else{
+					if(CONFIG.confirmWindow[SystemRegister.CONFIRM_OVERWRITE])
+						systemVoice = "セーブ：上書き";
+					mess3 += "$c;存档覆盖确认";
+				}
+			}
+
+			if(info.valid){
+				HitThresholdSelectItems(_page, 256);
+				for(var i=0;i<_save.count;i++) _save[i]._btn[0].hitThreshold = 256;
+
+				if(!confirm){
+					confirm = true;
+					if(systemVoice != "") PlaySystemVoice(systemVoice);
+					CallConfirm(mess1+mess2+mess3, _fLoad?SystemRegister.CONFIRM_LOAD:SystemRegister.CONFIRM_OVERWRITE, decide, cancel);
+				}
+			}else{
+				if(!confirm){
+					confirm = true;
+					decide();
+				}
+			}
+			break;
+		case 1 :
+			PlaySystemVoice("コメント編集");
+			with(_editComment){
+				.setSize(ScaleLoadSaveValue(370), ScaleLoadSaveValue(32));
+				.font.height = ScaleLoadSaveValue(23);
+
+				.text = _save[iSave]._comment;
+				var pt = new Point();
+				GetAbsolutePos(_save[iSave]._sprComment, pt, window.baseLayer);
+				.setPos(pt.x, pt.y);
+				invalidate pt;
+				.goEndCaret();
+				.visible = true;
+				.focus();
+				_save[iSave]._sprComment.visible = false;
+			}
+			_editType = 1;
+			break;
+		case 2 :
+			PlaySystemVoice("データコピー");
+
+			dataSelectModeEnter(DATASELECT_COPY);
+			break;
+		case 3 :
+			PlaySystemVoice("データ移動：開始");
+
+			dataSelectModeEnter(DATASELECT_MOVE);
+			break;
+		case 4 :
+			mess1 = "$c:white,red;";
+			mess2 = "BOOK%02d－%02d号".sprintf(book, num);
+			mess2 = han2zen(mess2);
+			mess3 += "$c;存档删除确认";
+			if(CONFIG.confirmWindow[SystemRegister.CONFIRM_DELETE])
+				PlaySystemVoice("データ削除：確認");
+
+			CallConfirm(mess1+mess2+mess3, SystemRegister.CONFIRM_DELETE, deleteDecide, deleteCancel);
+			break;
+
+		case 5 :
+			var obj = saveMan.at(_targetNo);
+			obj.lock = target.state?true:false;
+			_save[iSave].lock = obj.lock;
+			saveMan.save();
+			break;
+
+		case 6 :
+			with(_editComment){
+				.setSize(ScaleLoadSaveValue(250), ScaleLoadSaveValue(34));
+				.font.height = ScaleLoadSaveValue(28);
+
+				.text = saveMan.atBook(iBook).bookname;
+				var pt = new Point();
+				GetAbsolutePos(_book[iBook]._tagName, pt, window.baseLayer);
+				.setPos(pt.x-ScaleLoadSaveValue(2), pt.y-ScaleLoadSaveValue(2));
+				invalidate pt;
+				.goEndCaret();
+				.visible = true;
+				.focus();
+			}
+			_editType = 2;
+			_editBook = iBook;
+
+			_book[iBook]._tagName.visible = false;
+			break;
+		case 7 :
+			with(_editComment){
+				.setSize(ScaleLoadSaveValue(215), ScaleLoadSaveValue(28));
+				.font.height = ScaleLoadSaveValue(22);
+
+				.text = saveMan.atPage(_bookNo, iPage).pagename;
+				var pt = new Point();
+				GetAbsolutePos(_page[iPage]._tagName, pt, window.baseLayer);
+				.setPos(pt.x-ScaleLoadSaveValue(2), pt.y-ScaleLoadSaveValue(2));
+				invalidate pt;
+				.goEndCaret();
+				.visible = true;
+				.focus();
+			}
+			_editType = 3;
+			_editBook = _bookNo;
+			_editPage = iPage;
+
+			_page[iPage]._tagName.visible = false;
+			break;
+
+		default : break;
+		}
+	}
+
+	function decide(){
+		confirm = false;
+		if(_fLoad){
+			// Use original loading flow
+			super.hide(300, LoadSaveDelete);
+			PlaySystemVoice("ロード：実行");
+		}else{
+			PlaySystemVoice("セーブ：実行");
+			dm("セーブしました : " + _targetFile);
+
+			VisibleSettingWindow(false);
+			var saveOk = false;
+			try{
+				var save = new Savedata();
+				var saveNo = _targetNo;
+
+				save.set(_adv);
+				save.save(_targetFile, saveNo, _adv);
+				invalidate save;
+				saveOk = true;
+			}catch(e){
+				dm("load/save window save failed: " + e);
+			}
+			VisibleSettingWindow(true);
+
+			if(saveOk && _targetFile != "qsave.bmp"){
+				sysReg._newSaveNo = _targetNo + 1;
+				SaveSystemRegister();
+			}
+
+			if(saveOk) setPage(_bookNo, _pageNo);		//情報更新
+
+			cancel();
+		}
+	}
+	
+	function cancel(){
+		if(!isvalid this) return;
+
+		confirm = false;
+		HitThresholdSelectItems(_page, 0);
+		for(var i=0;i<_save.count;i++) _save[i]._btn[0].hitThreshold = 0;
+		_targetNo = -1;
+		_targetFile = "";
+		super.cancel();
+	}
+
+	function copyDecide(){
+		saveMan.copy(_targetNo, _dstTargetNo);
+
+		setPage(_bookNo, _pageNo);		//情報更新
+	}
+	function copyCancel(){}
+
+	function moveDecide(){
+		saveMan.move(_targetNo, _dstTargetNo);
+
+		setPage(_bookNo, _pageNo);		//情報更新
+	}
+	function moveCancel(){}
+
+	function deleteDecide(){
+		saveMan.del(_targetNo);
+
+		setPage(_bookNo, _pageNo);		//情報更新
+		_editComment.visible = false;
+	}
+	function deleteCancel(){
+	}
+
+	function onEditControlOk(target){
+		switch(_editType){
+		case 1 : 
+			var save;
+			if(_bookNo != _book.count - 1){
+				save = saveMan.at(_targetNo);
+			}else{
+				save = saveMan.atQSave(_targetNo % 90);
+			}
+			save.comment_edit = true;
+			save.comment = _editComment.text;
+
+			break;
+
+		case 2 : 
+			var obj = saveMan.atBook(_editBook);
+			obj.bookname = target.text;
+
+			_book[_editBook]._tagName.visible = true;
+			break;
+
+		case 3 : 
+			var obj = saveMan.atPage(_editBook, _editPage);
+			obj.pagename = target.text;
+
+			_page[_editPage]._tagName.visible = true;
+			break;
+		}
+
+		saveMan.save();
+		setPage(_bookNo, _pageNo);		//情報更新
+		_editComment.visible = false;
+
+		_editType = _editBook = _editPage = 0;
+	}
+	function onEditControlLeave(target){
+		setPage(_bookNo, _pageNo);		//情報更新
+		_editComment.visible = false;
+	}
+
+	function dataSelectModeEnter(type){
+		_dataSelectMode = type;
+
+		var obj = saveMan.at(_targetNo);
+		with(_savePrev){
+			.setPos(cursorX - .width \ 2, cursorY + ScaleLoadSaveValue(4));
+			.set(0, _targetNo+1, obj.realDate, obj.gameDate, obj.comment, obj.file, obj.root, obj.comment_edit);
+			.setupInfo();
+			.setupThumb();
+			.opacity = 196;
+			.visible = true;
+		}
+		with(_savePrevTag){
+			switch(type){
+			case DATASELECT_COPY :
+				.loadImages(getFilename("FRM_0343", _fLoad));
+				break;
+			case DATASELECT_MOVE :
+				.loadImages(getFilename("FRM_0344", _fLoad));
+				break;
+			}
+			.setSize(.imageWidth\2, .imageHeight);
+			ScaleLoadSaveLayerImage(_savePrevTag);
+			.setSize(.imageWidth\2, .imageHeight);
+			.setPos(_savePrev.left + ScaleLoadSaveValue(15), _savePrev.top + ScaleLoadSaveValue(106));
+			.visible = true;
+		}
+
+		_book[_book.count-1].visible = false;
+
+		setPage(_bookNo, _pageNo);		//情報更新
+	}
+	function dataSelectModeLeave(){
+		_dataSelectMode = false;
+
+		_savePrev.visible = false;
+		_savePrevTag.visible = false;
+
+		if(_fLoad) _book[_book.count-1].visible = true;
+
+		setPage(_bookNo, _pageNo);		//情報更新
+	}
+
+	function onMouseMove(x, y, shift){
+		if(_dataSelectMode){
+			_savePrev.setPos(cursorX - _savePrev.width \ 2, cursorY + ScaleLoadSaveValue(4));
+			_savePrevTag.setPos(_savePrev.left + ScaleLoadSaveValue(15), _savePrev.top + ScaleLoadSaveValue(106));
+		}
+	}
+
+	function onMouseDown(x, y, button, shift, windowNotify=false){
+		if(confirm) return;
+		if(IsLoadProccesing()) return;
+
+		if(button == mbRight && _dataSelectMode && windowNotify){
+			dataSelectModeLeave();
+		}else if(button == mbRight && windowNotify){
+			cancel();
+			HitThresholdSelectItems(_page, 256);
+			for(var i=0;i<_save.count;i++) _save[i]._btn[0].hitThreshold = 256;
+			hide(300, LoadSaveDelete);
+		}
+	}
+	function onKeyDown(key, shift){
+		if(confirm) return;
+		if(IsLoadProccesing()) return;
+
+		switch(key){
+		case VK_ESCAPE : 
+			if(_dataSelectMode){
+				dataSelectModeLeave();
+			}else{
+				cancel();
+				HitThresholdSelectItems(_page, 256);
+				for(var i=0;i<_save.count;i++) _save[i]._btn[0].hitThreshold = 256;
+				hide(300, LoadSaveDelete);
+			}
+			break;
+		case VK_PRIOR : 
+			onButtonDownL(_pageGroup.prev());
+			break;
+		case VK_NEXT : 
+			onButtonDownL(_pageGroup.next());
+			break;
+		case VK_TAB : 
+			if(shift & ssShift)	mouseTrackingPrev();
+			else				mouseTrackingNext();
+			break;
+		}
+		super.onKeyDown(...);
+	}
+
+	function action(ev){
+		if(ev.type == "onCloseQuery"){
+			if(_dataSelectMode) dataSelectModeLeave();
+		}
+	}
+
+	function getFilename(filename, fLoad=true){
+		if(FILELIST[filename] === void) return filename;
+
+		var file = FILELIST[filename][fLoad?0:1];
+		if(file !== void) return file;
+		return filename;
+	}
+
+	class Tag extends SelectItemGroupSprite{
+		var _fLoad;
+		var _type;
+		var _name = "";
+		var _btn;
+		var _btnEdit;
+		var _tagName;
+		var _tagNo;
+
+		var _px, _py;
+
+		var _tagNameSizeOver;
+		var _tagNameX;
+		var _tagNameTimer;
+
+		function Tag(win, par, fLoad=true){
+			super.SelectItemGroupSprite(...);
+
+			_fLoad = fLoad;
+			_tagNameTimer = new Timer(onTagNameCallback, "");
+			_tagNameTimer.interval = 25;
+		}
+		function finalize(){
+			_tagNameTimer.enabled = false;
+			invalidate _tagNameTimer;
+
+			invalidate _btn;
+			invalidate _btnEdit;
+			invalidate _tagName;
+			invalidate _tagNo;
+		}
+
+		function create(type=0, id=""){
+			_type = type;
+			_btn = new RadioButton(window, this);
+			_tagName = new global.Layer(window, this);
+			_tagNo = new global.Layer(window, this);
+			_btnEdit = new ControlButton(window, this);
+
+			var nPtn = 3;
+			switch(type){
+			case 0 :
+				setSize(IMG_SAVEDATA_TAG1.width \ nPtn, IMG_SAVEDATA_TAG1.height);
+				with(_btn){
+					.create(IMG_SAVEDATA_TAG1, nPtn);
+				}
+				with(_btnEdit){
+					.create(IMG_SAVEDATA_COM, 2);
+					.setPos(ScaleLoadSaveValue(250), ScaleLoadSaveValue(22));
+					.opacity = 0;
+				}
+				with(_tagName){
+					.setSize(ScaleLoadSaveValue(250), ScaleLoadSaveValue(36));
+					.setPos(ScaleLoadSaveValue(15), ScaleLoadSaveValue(18));
+					.font.face = FONT_DEFAULT_FACE;
+					.font.height = ScaleLoadSaveValue(28);
+					.hitThreshold = 256;
+					.visible = true;
+				}
+				with(_tagNo){
+					.font.height = ScaleLoadSaveValue(16);
+					.setSize(ScaleLoadSaveValue(32), .font.height+ScaleLoadSaveValue(2));
+					.setPos(ScaleLoadSaveValue(7), ScaleLoadSaveValue(8));
+					.hitThreshold = 256;
+					.visible = false;
+				}
+				break;
+			case 1 :
+				setSize(IMG_SAVEDATA_TAG2.width \ nPtn, IMG_SAVEDATA_TAG2.height);
+
+				with(_btn){
+					.create(IMG_SAVEDATA_TAG2, nPtn);
+				}
+				with(_btnEdit){
+					.create(IMG_SAVEDATA_COM, 2);
+					.setPos(ScaleLoadSaveValue(204), ScaleLoadSaveValue(14));
+					.opacity = 0;
+				}
+				with(_tagName){
+					.setSize(ScaleLoadSaveValue(215), ScaleLoadSaveValue(28));
+					.setPos(ScaleLoadSaveValue(12), ScaleLoadSaveValue(12));
+					.font.face = FONT_DEFAULT_FACE;
+					.font.height = ScaleLoadSaveValue(22);
+					.hitThreshold = 256;
+					.visible = true;
+				}
+				with(_tagNo){
+					.font.height = ScaleLoadSaveValue(13);
+					.setSize(ScaleLoadSaveValue(32), .font.height+ScaleLoadSaveValue(2));
+					.setPos(ScaleLoadSaveValue(8), ScaleLoadSaveValue(9));
+					.hitThreshold = 256;
+					.visible = false;
+				}
+				break;
+			}
+		}
+
+		function setTagName(name="", x=-1){
+			if(x == -1) _name = name;
+
+			with(_tagName){
+				.fillRect(0, 0, .width, .height, 0);
+
+				if(x == -1){
+					_tagNameSizeOver = (.font.getTextWidth(name) > .width);
+					x = 0;
+				}
+
+				.drawText(1+x, 1, name, 0xffffff, 255, true, 1024, 0x000000, 2);
+			}
+		}
+
+		function setPlacementPos(x, y){
+			_px = x;
+			_py = y;
+		}
+		property px{
+			getter(){return _px;}
+		}
+		property py{
+			getter(){return _py;}
+		}
+
+		function onTagNameCallback(){
+			setTagName(_name, -_tagNameX);
+			_tagNameX += ScaleLoadSaveValue(2);
+			if(_tagNameX > _tagName.font.getTextWidth(_name)) _tagNameX = -_tagName.width;
+		}
+
+		function onButtonDownL(){
+			parent.onButtonDownL(this);
+		}
+		function onButtonDownR(){
+			parent.onButtonDownR(this);
+		}
+
+		function onButtonEnter(target){
+			if(parent.parent._editComment.visible) return;
+
+			_btnEdit.opacity = 255;
+
+			if(_tagNameSizeOver){
+				_tagNameX = 0;
+				_tagNameTimer.enabled = true;
+			}
+		}
+		function onButtonLeave(target){
+			_btnEdit.opacity = 0;
+
+			if(_tagNameTimer.enabled){
+				_tagNameTimer.enabled = false;
+				setTagName(_name);
+			}
+		}
+
+		class ControlButton extends Button{
+			function ControlButton(win, par){
+				super.Button(...);
+			}
+
+			function onMouseEnter(x, y, shift){
+				super.onMouseEnter(...);
+				parent.onMouseEnter(...);
+			}
+			function onMouseLeave(x, y, shift){
+				super.onMouseLeave(...);
+				parent.onMouseLeave(...);
+			}
+
+			function onMouseDown(x, y, button, shift){
+				releaseCapture();
+				if((button == mbLeft) && _valid){
+					if(typeof parent.parent.parent.onButtonDownL != "undefined")
+						parent.parent.parent.onButtonDownL(this);
+				}else if((button == mbRight)){
+					if(typeof parent.parent.parent.onButtonDownR != "undefined")
+						parent.parent.parent.onButtonDownR(this);
+				}
+			}
+		}
+	}
+}
+
+function CallLoadSave(fLoad=true, obj=null, fFromTitle=false){
+	if(IsAnyWindow()) return false;
+
+	SPR_LOADSAVE = new LoadSaveWindow(win, win.baseLayer, true, fFromTitle);
+	SPR_LOADSAVE.create(fLoad, obj);
+	SPR_LOADSAVE.visible = true;
+	SPR_LOADSAVE.show(300);
+
+	return true;
+}
+function LoadSaveDelete(){
+	if(SPR_LOADSAVE === null) return;
+
+	var file = SPR_LOADSAVE._targetFile;
+	invalidate SPR_LOADSAVE;
+	SPR_LOADSAVE = null;
+
+	if(file != "")
+		game.action(%[type:"load", files:[file]]);
+}
+
+class HistoryWindow extends SettingWindowBase{
+	var PAGE_MAX = 10;
+	var MARGIN_LEFT = ScaleSideMenuValue(68+6);
+	var MARGIN_TOP = ScaleSideMenuValue(32);
+	var MARGIN_BOTTOM = WINDOW_HEIGHT;
+
+	var _adv;
+
+	var _advPreview;
+	var _advPreviewObj;
+
+	var _index = 0;
+
+	var _menuRoot;
+	var _base;
+	var _sld;
+	var _btn = [];
+	var _btnClose;
+
+	var _imgBtnL, _imgBtnS, _imgJump;
+
+	var _log = [];
+
+	var _max = 0;
+
+	var _enableInput;
+
+	var _jumpLogIndex = -1;
+
+	var _eol = false;
+
+	function HistoryWindow(win, par, adv){
+		super.SettingWindowBase(win, par);
+
+		SetupSideMenuWindow(this);
+		hitThreshold = 0;
+
+		_menuRoot = CreateSideMenuRoot(win, this, this);
+
+		_base = new global.Layer(win, _menuRoot);
+		with(_base){
+			.loadImages("FRM_0401");
+			.setSizeToImageSize();
+			ScaleSideMenuLayerImage(_base);
+			.setPos(0, 0);
+			.visible = true;
+		}
+
+		absolute = LAYER_HISTORY;
+
+		_adv = adv;
+
+		_imgBtnL = new global.Layer(win, _menuRoot);
+		with(_imgBtnL){
+			.loadImages("FRM_0109");
+			.setSizeToImageSize();
+		}
+		ScaleSideMenuLayerImage(_imgBtnL);
+		_imgBtnS = new global.Layer(win, _menuRoot);
+		with(_imgBtnS){
+			.loadImages("FRM_0109");
+			.setSizeToImageSize();
+		}
+		ScaleSideMenuLayerImage(_imgBtnS);
+		_imgJump = new global.Layer(win, _menuRoot);
+		with(_imgJump){
+			.loadImages("FRM_0414");
+			.setSizeToImageSize();
+		}
+		ScaleSideMenuLayerImage(_imgJump);
+
+		_menuRoot._imgBtnL = _imgBtnL;
+		_menuRoot._imgBtnS = _imgBtnS;
+		_menuRoot._imgJump = _imgJump;
+
+		for(var i=0;i<PAGE_MAX;i++) _log[i] = new Log(win, _menuRoot);
+
+		var index = DLimit(_adv._logName.count-10, 0);
+		var num = setPage(index, true);
+
+		_btnClose = new Button(window, _menuRoot);
+		var imgClose = LoadSideMenuScaledLayer(window, _menuRoot, "FRM_1101");
+		_btnClose.create(imgClose, 2);
+		_btnClose.setPos(0, ScaleSideMenuValue(64));
+		invalidate imgClose;
+
+		if(num < _adv._logName.count){
+			_max = _adv._logName.count - num;
+			_sld = new SliderV(win, _menuRoot);
+			var imgSlider = LoadSideMenuScaledLayer(window, _menuRoot, "FRM_0411");
+			_sld.create(imgSlider, ScaleSideMenuValue(21), ScaleSideMenuValue(502), 2, _max);
+			_sld.setPos(ScaleSideMenuValue(779), ScaleSideMenuValue(49));
+			invalidate imgSlider;
+			_sld.trim = _max;
+
+			_btn[0] = new Button(win, _menuRoot);
+			var imgPrev = LoadSideMenuScaledLayer(window, _menuRoot, "FRM_0412");
+			_btn[0].create(imgPrev, 2);
+			_btn[0].setPos(ScaleSideMenuValue(779), ScaleSideMenuValue(24));
+			invalidate imgPrev;
+			_btn[1] = new Button(win, _menuRoot);
+			var imgNext = LoadSideMenuScaledLayer(window, _menuRoot, "FRM_0413");
+			_btn[1].create(imgNext, 2);
+			_btn[1].setPos(ScaleSideMenuValue(779), ScaleSideMenuValue(555));
+			invalidate imgNext;
+		}
+
+		setPage(0);
+
+		_advPreview = new global.Sprite(win, _menuRoot);
+		with(_advPreview){
+			.absolute = 10000;
+			.hitThreshold = 256;
+		}
+
+		_enableInput = false;
+	}
+	function finalize(){
+		InvalidateArray(_log);
+		invalidate _base;
+		invalidate _menuRoot;
+		invalidate _sld;
+		InvalidateArray(_btn);
+		invalidate _btn;
+		invalidate _btnClose;
+
+		invalidate _imgBtnL;
+		invalidate _imgBtnS;
+		invalidate _imgJump;
+
+		invalidate _advPreview;
+		if(_advPreviewObj !== void) invalidate _advPreviewObj;
+
+		super.finalize();
+	}
+
+	function showEnd(){
+		setTransitionCompleteCall();
+		_enableInput = true;
+	}
+
+	function canJumpLogIndex(index){
+		if(index < 0) return false;
+		if(index >= _adv._logParam.count) return false;
+
+		var ref = _adv._logParam[index];
+		if(ref === void) return false;
+		if(ref.scenario === void || ref.scenario == "") return false;
+		if(ref.hitret === void) return false;
+		if(_adv._logSaveInfo[ref.scenario] === void) return false;
+
+		return true;
+	}
+
+	function setPage(index=0, test=false){
+		if(_sld !== void) _sld.trim = _sld._range - index;
+
+		_index = index;
+		for(var i=0;i<_log.count;i++){
+			_log[i].setPos(MARGIN_LEFT, MARGIN_BOTTOM);
+			_log[i].resetForReuse();
+		}
+
+		var li = _adv._logName.count - index - 1;
+
+		var fOver = false;
+		var i = 0;
+		while(li >= 0 && i < _adv._logName.count){
+			if(i >= _log.count) _log.add(new Log(window, _menuRoot));
+
+			var name = _adv._logName[li];
+			var mess = _adv._logMess[li];
+			var voice = _adv._logVoice[li];
+			var pan = _adv._logParam[li].pan;
+
+			var names = name.split("/");
+			if(names.count == 1)	name = names[0];
+			else					name = names[1];
+
+			if(name == "心の声" || name == "語り" || name == "モノローグ") name = "";
+
+			var font = %[];
+			with(font){
+				var ref = _adv._logParam[li].font;
+				.face = ref.face;
+				if(.face == "") .face = ADV_FONT_MESS_FACE;
+
+				if(ref.color == -1)	.color = Log.FONT_COLOR;
+				else				.color = ref.color;
+				if(ref.bkcolor == -1)	.bkcolor = Log.FONT_BKCOLOR;
+				else					.bkcolor = ref.color;
+
+				if(true){
+				//レンダリング済みフォント使用
+					var ref = PRFONT_DIC[GetFontFace(.face)];
+					.indent = GetElm(ref, ref.height + 4, ADV_FONT_MESS_INDENT);
+				}else{
+					var size = ref.size;
+
+					.size = int(size * _messScale);
+					.indent = .size + 2;
+					.bold = ref.bold;
+					.italic = ref.italic;
+				}
+			}
+			with(_log[i]){
+				.set(name, mess, voice, pan, font, li, test);
+				if(i == 0)	.setPos(MARGIN_LEFT, MARGIN_BOTTOM - .height);
+				else		.setPos(MARGIN_LEFT, _log[i-1].top - .height);
+				.visible = true;
+
+				if(i == 0)	.separate = false;
+				else		.separate = true;
+
+				//最新ログにはジャンプボタンを表示しない。
+				var jumpable = !(li >= _adv._logName.count-1);
+				//回想モード中はジャンプボタンを表示しない。
+				if(jumpable) jumpable = !IsRecollect();
+				if(jumpable) jumpable = canJumpLogIndex(li);
+				.validJumpButton = jumpable;
+
+				if(_log[i].top <= MARGIN_TOP){
+					fOver = true;
+					break;
+				}
+			}
+
+			i++;
+			li--;
+		}
+
+		if(!fOver){
+			var j=i-1;
+			_log[j].setPos(_log[j].left, MARGIN_TOP);
+			j--;
+			for(;j>=0;j--){
+				_log[j].setPos(_log[j].left, _log[j+1].top+_log[j+1].height);
+			}
+
+			if(li < 0)	_eol = true;
+			else		_eol = false;
+		}else{
+			_eol = false;
+		}
+
+		return i;
+	}
+
+	function prev(step=1){
+//		if(_eol) return;
+
+		_index += step;
+		if(_max < _index){
+			_index = _max;
+		}
+		setPage(_index);
+	}
+	function next(step=1){
+		if(_index <= 0){
+			hide(150, HistoryDelete);
+		}else{
+			_index -= step;
+			if(_index < 0) _index = 0;
+			setPage(_index);
+		}
+	}
+
+	function onMouseWheel(shift, delta, x, y){
+		if(!_enableInput) return;
+
+		if(delta < 0){
+			next(Math.abs(delta)\120);
+		}else if(delta > 0){
+			prev(Math.abs(delta)\120);
+		}
+	}
+	function onMouseDown(x, y, button, shift){
+		if(!_enableInput) return;
+
+		if(button == mbRight){
+			hide(150, HistoryDelete);
+		}
+	}
+	function onKeyDown(key, shift){
+		if(!_enableInput) return;
+
+		switch(key){
+		case VK_ESCAPE : hide(150, HistoryDelete); break;
+		case VK_UP : prev(); break;
+		case VK_PRIOR : prev(6); break;
+		case VK_DOWN : next(); break;
+		case VK_NEXT : next(6); break;
+		}
+		super.onKeyDown(...);
+	}
+
+	function onButtonDownL(target){
+		if(!_enableInput) return;
+
+		switch(target){
+		case _btnClose : 
+			hide(300, HistoryDelete);
+			break;
+		case _btn[0]: prev(); break;
+		case _btn[1]: next(); break;
+		default :
+			for(var i=0;i<_log.count;i++){
+				var index = _log[i].getVoiceButtonIndex(target);
+				if(index != -1){
+					var file = _log[i].getVoiceName(index);
+					if(index == 0)	_adv.playVoice(%[file:file, pan:_log[i].pan, config:false]);
+					else			_adv.playVoice(%[file:file, config:false]);
+					@if(__DEBUGMODE__)
+						_adv._msg.playVoice();
+					@endif
+					break;
+				}
+			}
+			break;
+		}
+	}
+
+	function onJumpButtonDown(target){
+		if(!_enableInput) return;
+		if(IsLoadProccesing()) return;
+		if(!canJumpLogIndex(target.logIndex)) return;
+
+		_jumpLogIndex = target.logIndex;
+
+		if(CONFIG.confirmWindow[SystemRegister.CONFIRM_LOGJUMP])
+			PlaySystemVoice("バックログジャンプ：確認");
+
+		CallConfirm("要跳转到这里吗？", SystemRegister.CONFIRM_LOGJUMP, jumpDecide, jumpCancel);
+	}
+	function onJumpButtonEnter(target){
+		if(!_enableInput) return;
+		if(IsLoadProccesing()) return;
+		if(!canJumpLogIndex(target.logIndex)) return;
+
+		// The hover preview rebuilds an ADV screen and is fragile when the mouse
+		// repeatedly enters jump buttons. Keep click-to-jump; skip the preview.
+		_advPreview.visible = false;
+		return;
+
+		var oldAdvVisible = _adv.visible;
+		var oldMsgVisible = _adv._msg.visible;
+		var oldHistoryVisible = visible;
+		var ref = _adv._logParam[target.logIndex];
+		var layer = null;
+
+		try{
+			_adv.visible = _adv._msg.visible = false;
+			visible = false;
+			layer = new global.Layer(window, _menuRoot);
+			var select = [];
+			if(ref.select !== void)	select.assignStruct(ref.select);
+			else					select.assignStruct(_adv._logSelect);
+
+			if(_advPreviewObj === void)
+				_advPreviewObj = new ADVScreen(win, LAYER_ADVSCREEN, LAYER_ADVMESSAGE, , true);
+
+			with(_advPreviewObj){
+				.jumpPreview(_adv, ref.scenario, ref.hitret, select);
+				.visible = true;
+				.screenShot(layer, false);
+				.visible = false;
+			}
+
+			with(_advPreview){
+				var pos = new Point();
+				GetAbsolutePos(target, pos);
+				if(1){
+					var scale = 3;
+					.setSize(80*scale, 60*scale);
+
+					pos.x = pos.x + target._btnJump.width + 4;
+					pos.y = pos.y + target.height \ 2 - .height \ 2;
+				}else{
+					var h = int(target.height * 0.75);
+					var w = int(1280 * (h / WINDOW_HEIGHT));
+					.setSize(w, h);
+
+					var messW = target.rectMess.width;
+					if(messW < target.rectName.width) messW = target.rectName.width;
+
+					pos.x = target.left + target.MARGIN_LEFT + messW + 8;
+					pos.y = pos.y + target.height\2 - .height \ 2 - 2;
+				}
+
+				.stretchCopy(0, 0, .width, .height, layer, 0, 0, layer.width, layer.height, stFastLinear);
+
+				if(_advPreviewObj.HScene) .doBoxBlur(4, 4);
+
+				var screenRect = new Rect(0, 0, SIDE_MENU_BASE_WIDTH, SIDE_MENU_BASE_HEIGHT);
+				var previewRect = new Rect(pos.x, pos.y, pos.x+.width, pos.y+.height);
+				if(!screenRect.isInnerRect(previewRect)){
+					if(screenRect.left > previewRect.left) previewRect.setPos(screenRect.left, previewRect.top);
+					if(screenRect.right < previewRect.right) previewRect.setPos(screenRect.width - previewRect.width, previewRect.top);
+					if(screenRect.top > previewRect.top) previewRect.setPos(previewRect.left, screenRect.top);
+					if(screenRect.bottom < previewRect.bottom) previewRect.setPos(previewRect.left, screenRect.height - previewRect.height);
+				}
+
+				.setPos(previewRect.left, previewRect.top);
+
+				invalidate pos;
+				invalidate screenRect;
+				invalidate previewRect;
+
+				.opacity = 0;
+				.setBlendingEnvelope(255);
+				.beginActivation(200);
+
+				.visible = true;
+			}
+		}catch(e){
+			dm("history preview failed: " + e);
+			_advPreview.visible = false;
+		}
+		if(layer !== null) invalidate layer;
+
+		_adv.visible = oldAdvVisible;
+		_adv._msg.visible = oldMsgVisible;
+		visible = oldHistoryVisible;
+	}
+	function onJumpButtonLeave(target){
+		with(_advPreview){
+			.visible = false;
+		}
+	}
+
+	function jumpDecide(){
+		if(!canJumpLogIndex(_jumpLogIndex)){
+			_jumpLogIndex = -1;
+			return;
+		}
+
+		PlaySystemVoice("バックログジャンプ：実行");
+
+		var ref = _adv._logParam[_jumpLogIndex];
+		var select = [];
+		if(ref.select !== void) select.assignStruct(ref.select);
+		HISTORY_JUMP.request(_adv, %[scenario:ref.scenario, hitret:ref.hitret, select:select]);
+		_enableInput = false;
+		_advPreview.visible = false;
+		_jumpLogIndex = -1;
+		hide(150, HistoryJumpClose);
+	}
+	function jumpCancel(){
+		_jumpLogIndex = -1;
+		_enableInput = true;
+		HISTORY_JUMP.clear();
+	}
+
+	function onSliderMoveStart(target){
+		onSliderMove(target);
+	}
+	function onSliderMove(target){
+		if(!_enableInput) return;
+
+		var i = target.range - target.trim;
+		if(_index != i){
+			_index = i;
+			setPage(_index);
+		}
+	}
+
+	class Log extends SelectItemGroupLayer{
+		var MESSAREA_WIDTH = ScaleSideMenuValue(720);
+
+		var MARGIN_TOP = ScaleSideMenuValue(36);
+		var MARGIN_BOTTOM = ScaleSideMenuValue(12);
+		var MARGIN_LEFT = ScaleSideMenuValue(2);
+		var MARGIN_RIGHT = 4;
+
+		var _ma;
+		var _separate;
+		var _btnVoice;
+		var _btnVoices = [];
+
+		var _btnJump;
+
+		var _voice;
+		var _pan;
+
+		var _logIndex = -1;
+
+		var _label;
+
+		var _rectName = new Rect();
+		var _rectMess = new Rect();
+
+		function Log(win, par){
+			SelectItemGroupLayer(...);
+
+			_ma = new MessageArea(window, this, true, global.GetFontFace);
+			with(_ma){
+				.setMargin(MARGIN_LEFT, MARGIN_TOP, ScaleSideMenuValue(SIDE_MENU_BASE_WIDTH-100), WINDOW_HEIGHT);
+				.setDefaultDrawTextParam(FONT_COLOR, 255, true, 3024, RGB(32, 32, 32), 3, 0, 0);
+				.setDefaultFontStyle(ADV_FONT_MESS_FACE, ADV_FONT_MESS_SIZE, ADV_FONT_MESS_INDENT);
+				.resetDrawTextParam();
+				.resetFontStyle();
+				.enableRuby(false);
+				.visible = true;
+			}
+
+			_separate = new global.Layer(win, this);
+			with(_separate){
+				.loadImages("FRM_0402");
+				.setSizeToImageSize();
+			}
+			ScaleSideMenuLayerImage(_separate);
+
+			_btnVoice = new Button(win, this);
+			with(_btnVoice){
+				.create(parent._imgBtnL, 2);
+			}
+
+			_btnJump = new JumpButton(win, this);
+			with(_btnJump){
+				.create(parent._imgJump, 2);
+			}
+
+			_label = new global.Layer(win, this);
+			with(_label){
+				.font.face = GetFontFace("24");
+			}
+
+			_rectName = new Rect();
+			_rectMess = new Rect();
+		}
+		function finalize(){
+			invalidate _ma;
+			invalidate _separate;
+			invalidate _btnVoice;
+
+			invalidate _btnJump;
+
+			invalidate _label;
+
+			invalidate _rectName;
+			invalidate _rectMess;
+
+			InvalidateArray(_btnVoices);
+		}
+
+		function set(name, mess, v, p, font=null, li=0, test=false){
+			_voice = v;
+			_pan = p;
+			_logIndex = li;
+			_btnJump.logIndex = li;
+
+			for(var i=0;i<mess.length;i++){
+				if(mess[i] != _ma.enterCode){
+					if(i != 0) mess = mess.substring(i);
+					break;
+				}
+			}
+
+			var str = "";
+			if(name == "")	str = mess;
+			else			str = name + "／" + mess;
+
+			//更新サイズを調べる
+			var fontName = %[];
+			(Dictionary.assignStruct incontextof fontName)(font);
+			fontName.face = "24";
+			fontName.indent = 28;
+			_rectName.assign(_ma.getUpdateRect(name, fontName));
+			_rectMess.assign(_ma.getUpdateRect(mess, font));
+
+			//レイヤサイズを調整
+			setSize(MESSAREA_WIDTH, MARGIN_TOP+MARGIN_BOTTOM+rectName.height+rectMess.height+_separate.height);
+			_ma.setSize(width, height);
+			_ma.clear();
+
+			if(name != "")
+				_ma.output(name + "／", true, fontName, , !test);
+			_ma.output(mess, true, font, , !test);
+
+			_separate.setPos(ScaleSideMenuValue(8), height - _separate.height);
+
+			if(v != ""){
+				_btnVoice.setPos(ScaleSideMenuValue(84), ScaleSideMenuValue(12));
+				_btnVoice.visible = true;
+			}else{
+				_btnVoice.visible = false;
+			}
+
+			InvalidateArray(_btnVoices);
+			_btnVoices.clear();
+
+			var voices = v.split("/");
+			if(voices.count > 1){
+				for(var i=0;i<voices.count;i++){
+					_btnVoices[i] = new VoiceButton(window, this);
+					with(_btnVoices[i]){
+						.create(parent._imgBtnS, 2);
+						var rect = _ma.getUpdateRect(name, font);
+						.base_x = MARGIN_LEFT+rect.width+i*(.width)+ScaleSideMenuValue(16);
+						.base_y = MARGIN_TOP+rect.height\2-.height\2;
+						.setPos(.base_x, .base_y);
+
+						var obj = CHAR_DATA[VCID_TO_INDEX[voices[i].substring(0, 2)]];
+						if(obj !== void){
+							if(obj.name == "")	.hintLabel = "モブキャラ";
+							else				.hintLabel = obj.name;
+						}else{
+							.hintLabel = "その他";
+						}
+					}
+				}
+			}
+
+			_btnJump.setPos(0, ScaleSideMenuValue(4));
+		}
+		function resetForReuse(){
+			_logIndex = -1;
+			_btnJump.logIndex = -1;
+			_voice = "";
+			_pan = "";
+			visible = false;
+			_label.visible = false;
+			_btnVoice.visible = false;
+			_btnJump.valid = false;
+			_btnJump.visible = false;
+			InvalidateArray(_btnVoices);
+			_btnVoices.clear();
+			_ma.clear();
+		}
+
+		function getVoiceButtonIndex(target){
+			if(target == _btnVoice) return 0;
+			for(var i=0;i<_btnVoices.count;i++){
+				if(target == _btnVoices[i]) return i + 1;
+			}
+			return -1;
+		}
+		function getVoiceName(index){
+			if(index == 0) return _voice;
+
+			var voices = _voice.split("/");
+			if(1 <= index && index <= voices.count)
+				return voices[index - 1];
+
+			return "";
+		}
+
+		function onButtonEnter(target){
+			switch(target){
+			case _btnJump :
+				parent.onJumpButtonEnter(target);
+				break;
+			case _btnVoice : break;
+			default : 
+				var i = 0;
+				for(;i<_btnVoices.count;i++){
+					if(target == _btnVoices[i]) break;
+				}
+
+				with(_label){
+					var w = .font.getTextWidth(_btnVoices[i].hintLabel);
+					var elm = PRFONT_DIC[.font.face];
+					.setSize(w+8, elm.height+4);
+					.fillRect(0, 0, .width, .height, 0x0);
+					.drawText(0, 0+elm.ratio, _btnVoices[i].hintLabel, GetDefineColor("white"), 255, true, 2048, GetDefineColor("black"), 2, 0, 0);
+					.setPos(_btnVoices[i].base_x+_btnVoices[i].width+4, _btnVoices[i].base_y+_btnVoices[i].height\2-elm.height\2);
+					.visible = true;
+				}
+
+				i++;
+				for(;i<_btnVoices.count;i++){
+					with(_btnVoices[i]){
+						.flushActivation();
+						.setMovingEnvelope(.base_x, .base_y, .left+_label.width+4, .top, 2);
+						.beginActivation(150);
+					}
+				}
+				break;
+			}
+		}
+		function onButtonLeave(target){
+			_label.visible = false;
+
+			switch(target){
+			case _btnJump :
+				parent.onJumpButtonLeave(target);
+				break;
+			default : 
+				for(var i=1;i<_btnVoices.count;i++){
+					with(_btnVoices[i]){
+						.flushActivation();
+						.setMovingEnvelope(.left, .top, .base_x, .base_y, 2);
+						.beginActivation(150);
+					}
+				}
+			}
+		}
+
+		function onButtonDownL(target){
+			switch(target){
+			case _btnJump :
+				parent.onJumpButtonDown(target);
+				break;
+			default : 
+				super.onButtonDownL(target);
+				break;
+			}
+		}
+
+		property separate{
+			getter(){return _separate.visible;}
+			setter(v){return _separate.visible = v;}
+		}
+
+		property ma{
+			getter(){return _ma;}
+		}
+		property rectName{
+			getter(){return _rectName;}
+		}
+		property rectMess{
+			getter(){return _rectMess;}
+		}
+
+		property voice{
+			getter(){return _voice;}
+		}
+		property pan{
+			getter(){return _pan;}
+		}
+		property logIndex{
+			getter(){return _logIndex;}
+		}
+		property validJumpButton{
+			getter(){return _btnJump.valid;}
+			setter(v){
+				_btnJump.valid = v;
+				_btnJump.visible = v;
+			}
+		}
+
+		class JumpButton extends Button{
+			var _logIndex = -1;
+
+			function JumpButton(win, par){
+				super.Button(win, par);
+			}
+
+			property logIndex{
+				getter(){return _logIndex;}
+				setter(v){_logIndex = v;}
+			}
+		}
+
+		class VoiceButton extends SelectItemBaseSprite{
+			var _nPattern;
+			var _nNormal;
+			var _nFocus;
+			var _nInvalid;
+
+			function VoiceButton(win, par){
+				super.SelectItemBaseSprite(win, par);
+			}
+
+			function kind(){return "VoiceButton";}
+
+			function create(file, nPattern=3){
+				if(typeof file == "Object"){
+					_width = file.imageWidth / nPattern;
+					_height = file.imageHeight;
+					setSize(_width, _height);
+					setImageSize(file.imageWidth, file.imageHeight);
+					copyRect(0, 0, file, 0, 0, file.imageWidth, file.imageHeight);
+				}else{
+					loadImages(file);
+					_width = imageWidth / nPattern;
+					_height = imageHeight;
+					setSize(_width, _height);
+				}
+				visible = true;
+
+				_nPattern = nPattern;
+				_nNormal = 0;
+				_nFocus = _nPattern >= 2 ? 1 : 0;
+				_nInvalid = _nPattern >= 3 ? 2 : 0;
+
+				setButton(_nNormal);
+			}
+
+			function onMouseDown(x, y, button, shift){
+				releaseCapture();
+				if((button == mbLeft) && _valid){
+					if(typeof parent.onButtonDownL != "undefined")
+						parent.onButtonDownL(this);
+				}else if((button == mbRight)){
+					if(typeof parent.onButtonDownR != "undefined")
+						parent.onButtonDownR(this);
+				}
+			}
+
+			function onMouseEnter(){
+				super.onMouseEnter();
+
+				if(!_valid) return;
+
+				setButton(_nFocus);
+			}
+			function onMouseLeave(){
+				super.onMouseLeave();
+
+				if(!_valid) return;
+
+				setButton(_nNormal);
+			}
+			function onValid(){setButton(_nNormal);}
+			function onInvalid(){setButton(_nInvalid);}
+
+			property ptnNormal{
+				getter(){return _nNormal;}
+				setter(v){_nNormal = v;}
+			}
+			property ptnFocus{
+				getter(){return _nFocus;}
+				setter(v){_nFocus = v;}
+			}
+			property ptnInvalid{
+				getter(){return _nInvalid;}
+				setter(v){_nInvalid = v;}
+			}
+		}
+	}
+	Log.FONT_COLOR = RGB(255, 255, 255);
+	Log.FONT_BKCOLOR = RGB(32, 32, 64);
+}
+
+function CallHistory(adv){
+	if(IsAnyWindow()) return false;
+
+	SPR_HISTORY = new HistoryWindow(win, win.baseLayer, adv);
+	SPR_HISTORY.visible = true;
+	SPR_HISTORY.show(150);
+}
+function HistoryDelete(){
+	if(SPR_HISTORY === null) return;
+	invalidate SPR_HISTORY;
+	SPR_HISTORY = null;
+}
+
+//各種ウィンドウの基底クラス
+class SettingWindowBase extends Sprite, SelectItemNotifyBase, InputNotifyBase, ChainItemBase{
+	var _fShow = false;
+	var _preFocus = 0;
+
+	var _onConfirm;
+
+	var _fExclusive;		//イベント配信を独占するか
+
+	function SettingWindowBase(win, par, fExclusive=true){
+		Sprite(...);
+		opacity = 0;
+
+		_fExclusive = fExclusive;
+
+		_onConfirm = false;
+	}
+
+	function finalize(){
+		global.Sprite.finalize();
+
+		win.removeInputNotify(this);
+		if(_fExclusive){
+			if(_fShow == false){
+				//イベントの配信を再開させる
+				removeMode();
+				win.setFocus(_preFocus);
+			}
+		}
+	}
+
+	function who(){return "SettingWindowBase";}
+
+	function show(time){
+		if(_fShow == true) return;
+
+		setTransitionCompleteCall(showEnd, true);
+		setBlendingEnvelope(255);
+		beginActivation(time);
+
+		_fShow = true;
+
+		win.addInputNotify(this);
+
+		if(_fExclusive){
+			//イベントの配信を禁止させる
+			setMode();
+			_preFocus = win.focus;
+			win.setFocus(this);
+		}
+	}
+	function showEnd(){
+	}
+	function hide(time, func=null){
+		if(_fShow == false) return;
+
+		setTransitionCompleteCall(func, true);
+		setBlendingEnvelope(0);
+		beginActivation(time);
+		_fShow = false;
+	}
+	function action(ev){
+		if(ev.type == "onFileDrop"){
+			game.load(ev.files[0], true);
+		}
+	}
+
+	function cancel(){
+		confirm = false;
+	}
+
+	function addChainItem(obj){
+		if(obj === void) return;
+		global.ChainItemBase.addChainItem(obj);
+	}
+	function removeChainItem(obj){
+		if(obj === void) return;
+		global.ChainItemBase.removeChainItem(obj);
+	}
+	function removeChainItemAll(){
+		global.ChainItemBase.removeChainItemAll();
+	}
+
+	property confirm{
+		setter(v){_onConfirm = v;}
+		getter(){return _onConfirm;}
+	}
+}
+
+function IsSettingWindow(){
+	if(SPR_LOADSAVE != null) return true;
+	if(SPR_HISTORY != null) return true;
+	if(SPR_CONFIG != null) return true;
+	if(SPR_CONFIRM != null) return true;
+	return false;
+}
+function HideSettingWindow(){
+	var time = 300;
+	if(SPR_LOADSAVE != null) SPR_LOADSAVE.hide(time, LoadSaveDelete);
+	if(SPR_HISTORY != null) SPR_HISTORY.hide(time, HistoryDelete);
+	if(SPR_CONFIG != null) SPR_CONFIG.hide(time, ConfigDelete);
+	if(SPR_CONFIRM !== null) SPR_CONFIRM.hide(time, ConfirmDelete);
+}
+function VisibleSettingWindow(f){
+	var time = 300;
+	if(SPR_LOADSAVE != null) SPR_LOADSAVE.visible = f;
+	if(SPR_HISTORY != null) SPR_HISTORY.visible = f;
+	if(SPR_CONFIG != null) SPR_CONFIG.visible = f;
+	if(SPR_CONFIRM != null) SPR_CONFIRM.visible = f;
+}
+
+var SPR_LOADSAVE = null;
+var SPR_HISTORY = null;
+var SPR_CONFIG = null;
+function IsAnyWindow(){
+	var ret = false;
+	ret |= (SPR_LOADSAVE != null);
+	ret |= (SPR_HISTORY != null);
+	ret |= (SPR_CONFIG != null);
+	return ret;
+}

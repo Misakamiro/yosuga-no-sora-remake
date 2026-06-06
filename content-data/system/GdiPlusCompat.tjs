@@ -1,0 +1,164 @@
+/* GdiPlus Compat - lightweight object surface for layerExDraw callers. */
+
+class GdiPlusCompatAppearance{
+	var brushes = [];
+	var pens = [];
+
+	function GdiPlusCompatAppearance(){
+		clear();
+	}
+
+	function clear(){
+		brushes.clear();
+		pens.clear();
+	}
+
+	function addBrush(color, hatch=0, fore=0, back=0){
+		brushes.add(%[color:color, hatch:hatch, fore:fore, back:back]);
+	}
+
+	function addPen(color, width=1, dash=0, startCap=0, endCap=0){
+		var penWidth = width;
+		var lineJoin = 0;
+		if(typeof width == "Dictionary"){
+			penWidth = width.width !== void ? width.width : 1;
+			lineJoin = width.lineJoin !== void ? width.lineJoin : 0;
+		}
+		pens.add(%[color:color, width:penWidth, dash:dash, startCap:startCap, endCap:endCap, lineJoin:lineJoin]);
+	}
+}
+
+class GdiPlusCompatNullObject{
+	function GdiPlusCompatNullObject(){}
+}
+
+global.GdiPlus = %[];
+global.GdiPlus.LineJoinRound = 2;
+global.GdiPlus.Appearance = GdiPlusCompatAppearance;
+global.GdiPlus.Graphics = GdiPlusCompatNullObject;
+global.GdiPlus.Bitmap = GdiPlusCompatNullObject;
+global.GdiPlus.Font = GdiPlusCompatNullObject;
+global.GdiPlus.Pen = GdiPlusCompatNullObject;
+global.GdiPlus.Brush = GdiPlusCompatNullObject;
+
+function GdiPlusCompatColorAlpha(color){
+	return (color >> 24) & 0xff;
+}
+
+function GdiPlusCompatRgb(color){
+	return color & 0xffffff;
+}
+
+function GdiPlusCompatBrushColor(app, fallback=0x80ffffff){
+	if(app !== void && app.brushes !== void && app.brushes.count > 0 && app.brushes[app.brushes.count-1].color !== void)
+		return app.brushes[app.brushes.count-1].color;
+	if(app !== void && app.pens !== void && app.pens.count > 0 && app.pens[app.pens.count-1].color !== void)
+		return app.pens[app.pens.count-1].color;
+	return fallback;
+}
+
+function GdiPlusCompatPen(app){
+	if(app !== void && app.pens !== void && app.pens.count > 0)
+		return app.pens[app.pens.count-1];
+	return %[color:0xffffffff, width:1];
+}
+
+function GdiPlusCompatPenWidth(app){
+	var pen = GdiPlusCompatPen(app);
+	return pen.width !== void ? int(pen.width) : 1;
+}
+
+function GdiPlusCompatRectFromPoints(points){
+	var left = points[0][0], top = points[0][1], right = points[0][0], bottom = points[0][1];
+	for(var i=1;i<points.count;i++){
+		if(points[i][0] < left) left = points[i][0];
+		if(points[i][0] > right) right = points[i][0];
+		if(points[i][1] < top) top = points[i][1];
+		if(points[i][1] > bottom) bottom = points[i][1];
+	}
+	return %[left:int(left), top:int(top), width:int(right-left)+1, height:int(bottom-top)+1];
+}
+
+function GdiPlusCompatFill(layer, app, x, y, width, height){
+	if(width <= 0 || height <= 0) return;
+	var color = GdiPlusCompatBrushColor(app);
+	layer.colorRect(int(x), int(y), int(width), int(height), GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+}
+
+function GdiPlusCompatStrokeRect(layer, app, x, y, width, height){
+	if(width <= 0 || height <= 0) return;
+	var pen = GdiPlusCompatPen(app);
+	var color = pen.color !== void ? pen.color : 0xffffffff;
+	var thick = pen.width !== void ? int(pen.width) : 1;
+	if(thick < 1) thick = 1;
+	layer.colorRect(int(x), int(y), int(width), thick, GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+	layer.colorRect(int(x), int(y + height - thick), int(width), thick, GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+	layer.colorRect(int(x), int(y), thick, int(height), GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+	layer.colorRect(int(x + width - thick), int(y), thick, int(height), GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+}
+
+function GdiPlusCompatDrawLine(layer, app, x1, y1, x2, y2){
+	var pen = GdiPlusCompatPen(app);
+	var color = pen.color !== void ? pen.color : 0xffffffff;
+	var thick = pen.width !== void ? int(pen.width) : 1;
+	if(thick < 1) thick = 1;
+	var left = x1 < x2 ? x1 : x2;
+	var top = y1 < y2 ? y1 : y2;
+	var width = (x1 < x2 ? x2 - x1 : x1 - x2) + thick;
+	var height = (y1 < y2 ? y2 - y1 : y1 - y2) + thick;
+	layer.colorRect(int(left), int(top), int(width), int(height), GdiPlusCompatRgb(color), GdiPlusCompatColorAlpha(color));
+}
+
+if(typeof global.Layer.drawArc == "undefined"){
+	global.Layer.drawArc = function(app, x, y, width, height, startAngle, sweepAngle){
+		GdiPlusCompatFill(this, app, x, y, width, height);
+	};
+}
+
+if(typeof global.Layer.drawRectangle == "undefined"){
+	global.Layer.drawRectangle = function(app, x, y, width, height){
+		if(app !== void && app.brushes !== void && app.brushes.count > 0)
+			GdiPlusCompatFill(this, app, x, y, width, height);
+		GdiPlusCompatStrokeRect(this, app, x, y, width, height);
+	};
+}
+
+if(typeof global.Layer.drawLine == "undefined"){
+	global.Layer.drawLine = function(app, x1, y1, x2, y2){
+		GdiPlusCompatDrawLine(this, app, x1, y1, x2, y2);
+	};
+}
+
+if(typeof global.Layer.drawPolygon == "undefined"){
+	global.Layer.drawPolygon = function(app, points){
+		if(points === void || points.count <= 0) return;
+		if(app !== void && app.brushes !== void && app.brushes.count > 0){
+			var rect = GdiPlusCompatRectFromPoints(points);
+			GdiPlusCompatFill(this, app, rect.left, rect.top, rect.width, rect.height);
+		}
+		for(var i=0;i<points.count;i++){
+			var n = (i + 1) % points.count;
+			GdiPlusCompatDrawLine(this, app, points[i][0], points[i][1], points[n][0], points[n][1]);
+		}
+	};
+}
+
+if(typeof global.Layer.drawLines == "undefined"){
+	global.Layer.drawLines = function(app, points){
+		if(points === void || points.count <= 1) return;
+		for(var i=0;i<points.count-1;i++)
+			GdiPlusCompatDrawLine(this, app, points[i][0], points[i][1], points[i+1][0], points[i+1][1]);
+	};
+}
+
+if(typeof global.Layer.drawBeziers == "undefined"){
+	global.Layer.drawBeziers = function(app, points){
+		if(points === void || points.count <= 0) return;
+		var rect = GdiPlusCompatRectFromPoints(points);
+		if(app !== void && app.brushes !== void && app.brushes.count > 0)
+			GdiPlusCompatFill(this, app, rect.left, rect.top, rect.width, rect.height);
+		GdiPlusCompatStrokeRect(this, app, rect.left, rect.top, rect.width, rect.height);
+	};
+}
+
+Debug.notice("GdiPlusCompat loaded");

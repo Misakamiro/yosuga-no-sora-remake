@@ -1,0 +1,451 @@
+class KAGParserCompat
+{
+	var ignoreCR = false;
+	var processSpecialTags = true;
+	var multiLineTagEnabled = false;
+	var debugLevel = 0;
+	var _stop = false;
+	var _storage = "";
+	var _line = 0;
+	var _tagIndex = 0;
+	var _tags = [];
+	var macros = %[];
+	var _macroExpansionStack = [];
+	var _conditionStack = [];
+
+	function KAGParser()
+	{
+		Debug.notice("KAGParser initialized");
+		processSpecialTags = true;
+	}
+
+	function setController(controller)
+	{
+		_scController = controller;
+	}
+
+	function _parseKagScript(src)
+	{
+		_tags = [];
+		_tagIndex = 0;
+		_stop = false;
+		_macroExpansionStack = [];
+		_conditionStack = [];
+
+		if(src === void || src === "") return;
+
+		Debug.message(">>> _parseKagScript called, src length: " + src.length);
+		
+		var lines = src.split("\n");
+		var inTalkBlock = false;
+		
+		for(var i = 0; i < lines.count; i++)
+		{
+			var line = lines[i].replace(/\r/g, "");
+			
+			if(line == "" || line.charAt(0) == ";")
+			{
+				continue;
+			}
+			
+			if(line.charAt(0) == "*")
+			{
+				var labelName = line.substring(1).trim();
+				_tags.add(%[tagname: "*" + labelName]);
+				inTalkBlock = false;
+				continue;
+			}
+			
+			if(line.charAt(0) == "@")
+			{
+				var tagLine = line.substring(1).trim();
+				var tagName = tagLine.split(" ")[0].toLowerCase();
+				
+				var elm = %[tagname: tagName];
+				
+				var parts = tagLine.split(" ");
+				for(var j = 1; j < parts.count; j++)
+				{
+					var eq = parts[j].indexOf("=");
+					if(eq >= 0)
+					{
+						var key = parts[j].substring(0, eq);
+						var val = parts[j].substring(eq + 1);
+						if(val.length >= 2 && val.charAt(0) == "\"" && val.charAt(val.length - 1) == "\"")
+							val = val.substring(1, val.length - 1);
+						elm[key] = val;
+					}
+				}
+				
+				_tags.add(elm);
+				
+				if(tagName == "talk")
+				{
+					inTalkBlock = true;
+				}
+				else if(tagName == "hitret" || tagName == "hitwait")
+				{
+					inTalkBlock = false;
+				}
+				
+				continue;
+			}
+			
+			if(line.charAt(0) == "[")
+			{
+				var endBr = line.indexOf("]");
+				if(endBr < 0) continue;
+				var tagLine = line.substring(1, endBr).trim();
+				
+				var tagName = tagLine.split(" ")[0].toLowerCase();
+				var elm = %[tagname: tagName];
+				
+				var parts = tagLine.split(" ");
+				for(var j = 1; j < parts.count; j++)
+				{
+					var eq = parts[j].indexOf("=");
+					if(eq >= 0)
+					{
+						var key = parts[j].substring(0, eq);
+						var val = parts[j].substring(eq + 1);
+						if(val.length >= 2 && val.charAt(0) == "\"" && val.charAt(val.length - 1) == "\"")
+							val = val.substring(1, val.length - 1);
+						elm[key] = val;
+					}
+				}
+				
+				_tags.add(elm);
+				continue;
+			}
+			
+			if(inTalkBlock && line != "")
+			{
+				_tags.add(%[tagname: "ch", text: line]);
+			}
+		}
+		
+		Debug.message(">>> _parseKagScript finished, total tags: " + _tags.count);
+	}
+
+	function _collectAllMacros()
+	{
+		var newTags = [];
+		var i = 0;
+		while(i < _tags.count)
+		{
+			if(_tags[i].tagname == "macro")
+			{
+				var macroName = _tags[i].name;
+				if(macroName === void)
+				{
+					newTags.add(_tags[i]);
+					i++;
+					continue;
+				}
+				var macroTags = [];
+				i++;
+				while(i < _tags.count)
+				{
+					if(_tags[i].tagname == "endmacro")
+					{
+						i++;
+						break;
+					}
+					macroTags.add(_tags[i]);
+					i++;
+				}
+				macros[macroName] = macroTags;
+			}
+			else
+			{
+				newTags.add(_tags[i]);
+				i++;
+			}
+		}
+		_tags = newTags;
+	}
+
+	function loadScenario(storage)
+	{
+		Debug.notice("KAGParser.loadScenario: storage=" + storage);
+		_storage = storage;
+		_stop = false;
+		_tagIndex = 0;
+		_macroExpansionStack = [];
+
+		if(!Storages.isExistentStorage(storage))
+		{
+			Debug.notice("KAGParser: storage not found: " + storage);
+			return;
+		}
+
+		var src = "";
+		var loaded = false;
+
+		var ctxFile = storage + ".ctx";
+		if(Storages.isExistentStorage(ctxFile))
+		{
+			try
+			{
+				Scripts.execStorage(ctxFile);
+				if(global.__kag_src__ !== void && global.__kag_src__ !== "")
+				{
+					src = global.__kag_src__;
+					global.__kag_src__ = "";
+					loaded = true;
+				}
+			}
+			catch(e_ctx)
+			{
+				Debug.notice("KAGParser: ctx load error: " + ctxFile + " - " + e_ctx.message);
+			}
+		}
+
+		if(!loaded && typeof Storages.readAllText != "undefined")
+		{
+			try
+			{
+				src = Storages.readAllText(storage);
+				if(src !== void && src !== "") loaded = true;
+			}
+			catch(e5)
+			{
+			}
+		}
+
+		if(!loaded)
+		{
+			Debug.notice("KAGParser: cannot read scenario: " + storage);
+			return;
+		}
+
+		Debug.notice(">>> loadScenario: loaded src length=" + src.length);
+		_parseKagScript(src);
+		_collectAllMacros();
+		_tagIndex = 0;
+	}
+
+	function loadMacro(storage)
+	{
+		loadScenario(storage);
+
+		var tag;
+		while((tag = getNextTag()) !== void)
+		{
+		}
+
+		if(typeof Dictionary != "undefined")
+		{
+			(Dictionary.assign incontextof _macros)(macros);
+		}
+		clear();
+	}
+
+	function _isConditionActive()
+	{
+		for(var i = 0; i < _conditionStack.count; i++)
+		{
+			if(!_conditionStack[i].active) return false;
+		}
+		return true;
+	}
+
+	function _evalCondition(exp)
+	{
+		if(exp === void || exp == "") return false;
+		try
+		{
+			var ret = Scripts.eval(exp);
+			return ret ? true : false;
+		}
+		catch(e)
+		{
+			Debug.notice("KAGParser: condition eval failed: " + exp + " - " + e);
+			return false;
+		}
+	}
+
+	function _handleConditionTag(tag)
+	{
+		var tagname = tag.tagname.toLowerCase();
+		switch(tagname)
+		{
+		case "if" :
+			var parentActive = _isConditionActive();
+			var active = parentActive && _evalCondition(tag.exp);
+			_conditionStack.push(%[parentActive:parentActive, active:active, branchTaken:active]);
+			return true;
+		case "elsif" :
+			if(_conditionStack.count == 0) return true;
+			var frame = _conditionStack[_conditionStack.count - 1];
+			if(!frame.parentActive || frame.branchTaken)
+			{
+				frame.active = false;
+			}
+			else
+			{
+				frame.active = _evalCondition(tag.exp);
+				if(frame.active) frame.branchTaken = true;
+			}
+			return true;
+		case "else" :
+			if(_conditionStack.count == 0) return true;
+			var frame = _conditionStack[_conditionStack.count - 1];
+			frame.active = frame.parentActive && !frame.branchTaken;
+			frame.branchTaken = true;
+			return true;
+		case "endif" :
+			if(_conditionStack.count > 0) _conditionStack.pop();
+			return true;
+		}
+		return false;
+	}
+
+	function _getNextRawTag()
+	{
+		if(_stop) return void;
+
+		while(_macroExpansionStack.count > 0)
+		{
+			var top = _macroExpansionStack[_macroExpansionStack.count - 1];
+			if(top.index < top.tags.count)
+			{
+				var tag = top.tags[top.index];
+				top.index++;
+				if(macros[tag.tagname] !== void)
+				{
+					_macroExpansionStack.push(%[tags: _expandMacro(tag, macros[tag.tagname]), index: 0]);
+					continue;
+				}
+				return tag;
+			}
+			else
+			{
+				_macroExpansionStack.pop();
+			}
+		}
+
+		if(_tagIndex >= _tags.count) return void;
+		var tag = _tags[_tagIndex];
+		_tagIndex++;
+
+		if(macros[tag.tagname] !== void)
+		{
+			_macroExpansionStack.push(%[tags: _expandMacro(tag, macros[tag.tagname]), index: 0]);
+			return _getNextRawTag();
+		}
+
+		return tag;
+	}
+
+	function getNextTag()
+	{
+		if(_stop) return void;
+
+		while(true)
+		{
+			var tag = _getNextRawTag();
+			if(tag === void) return void;
+
+			if(processSpecialTags)
+			{
+				if(_handleConditionTag(tag)) continue;
+				if(!_isConditionActive()) continue;
+			}
+
+			return tag;
+		}
+	}
+
+	function _expandMacro(callTag, macroTags)
+	{
+		var expanded = [];
+		for(var i = 0; i < macroTags.count; i++)
+		{
+			var srcTag = macroTags[i];
+			var newTag = %[tagname: srcTag.tagname];
+			for(var k = 0; k < srcTag.count; k += 2)
+			{
+				var key = srcTag[k];
+				if(key == "tagname") continue;
+				var val = srcTag[k + 1];
+				if(typeof val == "string" && val.length > 0 && val.charAt(0) == "%")
+				{
+					var paramName = val.substring(1);
+					if(callTag[paramName] !== void)
+					{
+						newTag[key] = callTag[paramName];
+					}
+					else
+					{
+						newTag[key] = val;
+					}
+				}
+				else
+				{
+					newTag[key] = val;
+				}
+			}
+			for(var k2 = 0; k2 < callTag.count; k2 += 2)
+			{
+				var key2 = callTag[k2];
+				if(key2 == "tagname") continue;
+				if(newTag[key2] === void)
+				{
+					newTag[key2] = callTag[key2];
+				}
+			}
+			expanded.add(newTag);
+		}
+		return expanded;
+	}
+
+	function stop()
+	{
+		_stop = true;
+	}
+
+	function start()
+	{
+		_stop = false;
+	}
+
+	function clear()
+	{
+		_tags = [];
+		_tagIndex = 0;
+		_stop = false;
+		_macroExpansionStack = [];
+		_conditionStack = [];
+	}
+
+	function clearStop()
+	{
+		_stop = false;
+	}
+
+	function goToLabel(label)
+	{
+		_stop = false;
+		_macroExpansionStack = [];
+		_conditionStack = [];
+		var searchLabel = label;
+		if(searchLabel.charAt(0) != "*") searchLabel = "*" + searchLabel;
+		for(var i = 0; i < _tags.count; i++)
+		{
+			if(_tags[i].tagname == searchLabel)
+			{
+				_tagIndex = i + 1;
+				return;
+			}
+		}
+	}
+
+	function reset()
+	{
+		_tagIndex = 0;
+		_stop = false;
+		_macroExpansionStack = [];
+		_conditionStack = [];
+	}
+}

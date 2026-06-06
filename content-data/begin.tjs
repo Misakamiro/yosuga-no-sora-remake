@@ -1,0 +1,42 @@
+﻿@if(__DEBUGMODE__ != 0)
+	Debug.console.visible = true;
+@endif
+
+win.bringToFront();
+
+global.game = new SceneManager(win);
+
+var useNewGame = (System.getArgument("-newgame") !== void);
+var useAlbum = (System.getArgument("-album") !== void);
+var useMusic = (System.getArgument("-music") !== void);
+var useMemories = (System.getArgument("-memories") !== void);
+
+if (useAlbum)
+{
+	game.changeScene(SCENE_ALBUM);
+}
+else if (useMusic)
+{
+	game.changeScene(SCENE_MUSIC);
+}
+else if (useMemories)
+{
+	game.changeScene(SCENE_MEMORIES);
+}
+else if (useNewGame)
+{
+	Debug.message(">>> -newgame detected, switching to ADV");
+	game.setScene(SCENE_ADV);
+	
+	var adv = game.getScene(SCENE_ADV);
+	if (adv !== void)
+	{
+		adv.start("00_z000", "");
+	}
+}
+else
+{
+	game.changeScene(SCENE_LOGO);
+}
+
+delete boot;

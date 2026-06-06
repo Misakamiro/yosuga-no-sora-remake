@@ -1,0 +1,300 @@
+﻿
+//デバッグメッセージ出力用
+@if(__DEBUGMODE__ != 0)
+	var dm = Debug.message;
+	var sm = System.inform;
+@endif
+@if(__DEBUGMODE__ == 0)
+	var dm = function(text){};
+	var sm = function(text){};
+@endif
+
+//多重起動チェック
+if(!System.createAppLock("CuffsApplication-"+GAME_CAPTION)){
+	System.inform("游戏已经在运行了。");
+	System.exit();
+}
+
+/*
+@if(__DEBUGMODE__ == 1)
+	//動作オプション設定
+	System.setArgument("-contfreq", "6000");	//更新周期(Hz)
+	System.setArgument("-usedb", "yes");	//ダブルバッファリング有効
+	System.setArgument("-dbstyle", "auto");	//ダブルバッファリング方式　自動
+@endif
+*/
+
+//------------------------------------------------------------------------------
+//
+// 設定ファイルの不正変更回避
+//		つまるところファイル削除程度でデバッグメニューが出るのは見苦しいので。
+//
+//------------------------------------------------------------------------------
+
+
+//------------------------------------------------------------------------------
+//
+// 捕捉されない例外に対する処理
+// 製品版でコンソールが表示されるとみっともないので、
+// エラーだけ表示して終了させる。
+//
+//------------------------------------------------------------------------------
+@if(__DEBUGMODE__ == 0)
+	System.exceptionHandler = function (e) {
+		System.eventDisabled = true;
+
+		Debug.logAsError();
+		System.inform(e.message);
+		System.terminate();
+		return true;
+	};
+@endif
+
+//キャプション登録
+System.title = GAME_CAPTION;
+
+function AddAutoPath(name){
+	//">"で分割
+	var path = name.split(">");
+
+	if(path.count == 1){
+		//分割できなかったので普通に追加
+		Storages.addAutoPath(name);
+		return true;
+	}else{
+	//分割出来た場合は、アーカイブファイルの有無をチェックしてから追加
+		if(Storages.isExistentStorage(System.exePath + path[0])) {
+		//見つかった
+			Storages.addAutoPath(System.exePath + name);
+			return true;
+		}
+	}
+	return false;
+}
+
+//パス設定
+
+//アーカイブ読み込み
+AddAutoPath("data/system/");
+AddAutoPath("data/scenario/");
+AddAutoPath("data/font/");
+AddAutoPath("data/frame/");
+AddAutoPath("data/thumb/");
+AddAutoPath("savedata/");
+AddAutoPath("char/");
+AddAutoPath("voice/");
+AddAutoPath("parts/");
+AddAutoPath("event/");
+AddAutoPath("bg/");
+AddAutoPath("bgm/");
+AddAutoPath("char/");
+AddAutoPath("event/");
+AddAutoPath("se/");
+AddAutoPath("sd/");
+AddAutoPath("rule/");
+AddAutoPath("thumb/");
+AddAutoPath("parts/face/");
+AddAutoPath("parts/emotion/");
+AddAutoPath("parts/credit/");
+AddAutoPath("patch.xp3>");
+
+//後で追加したものから優先してチェックされる
+AddAutoPath("font/");
+AddAutoPath("frame/");
+AddAutoPath("parts/");
+AddAutoPath("bg/");
+AddAutoPath("char/");
+AddAutoPath("parts/face/");
+AddAutoPath("event/");
+AddAutoPath("parts/voice/");
+AddAutoPath("bgm/");
+AddAutoPath("se/");
+AddAutoPath("sd/");
+AddAutoPath("rule/");
+AddAutoPath("thumb/");
+AddAutoPath("parts/emotion/");
+AddAutoPath("parts/credit/");
+AddAutoPath("_debug/");
+AddAutoPath("_debug/tutorial/");
+AddAutoPath("plugin/");
+AddAutoPath("thumb/");
+
+// Directory-mode runtime paths. Add these after the legacy paths so the
+// content-data tree remains the active HD runtime set.
+AddAutoPath("content-data/font/");
+AddAutoPath("content-data/frame/");
+AddAutoPath("content-data/frame_m2/");
+AddAutoPath("content-data/rule/");
+AddAutoPath("content-data/thumb/");
+AddAutoPath("content-data/ui_1920/");
+AddAutoPath("content-data/audio_ogg/");
+AddAutoPath("content-data/char/");
+AddAutoPath("content-data/character_1920/");
+AddAutoPath("content-data/event_1920/");
+AddAutoPath("content-data/bg_1920/");
+AddAutoPath("content-data/scenario/");
+AddAutoPath("content-data/system/");
+
+delete AddAutoPath;
+
+//プラグイン追加
+Plugins.link("extrans.dll");
+Plugins.link("csvParser.dll");
+Plugins.link("windowEx.dll");
+Plugins.link("layerExDraw.dll");
+Plugins.link("fstat.dll");
+Plugins.link("KAGParserEx.dll");
+@if(__DEBUGMODE__)
+	Plugins.link("getSample.dll");
+@endif
+
+//スクリプト読み込み
+function LoadScript(name){
+	if(Storages.isExistentStorage(name)){
+		Scripts.execStorage(name);
+	}else{
+		dm(name+"が見つかりませんでした。");
+	}
+}
+
+//各システム読み込み
+LoadScript("Utility.tjs");
+LoadScript("AffineLayer.tjs");
+LoadScript("Sprite.tjs");
+LoadScript("Window.tjs");
+LoadScript("MessageArea.tjs");
+LoadScript("GdiPlusCompat.tjs");
+LoadScript("KAGParserCompat.tjs");
+LoadScript("ScController.tjs");
+LoadScript("SelectItem.tjs");
+LoadScript("GameSceneManager.tjs");
+LoadScript("ADVObject.tjs");
+LoadScript("ADVScreen.tjs");
+LoadScript("EditLayer.tjs");
+LoadScript("Sound.tjs");
+LoadScript("Action.tjs");
+LoadScript("Movie.tjs");
+LoadScript("AnimationSequence.tjs");
+
+//ゲーム固有
+LoadScript("System.tjs");
+LoadScript("MessageFrame.tjs");
+LoadScript("Confirm.tjs");
+LoadScript("SystemWindow.tjs");
+LoadScript("ConfigWindow.tjs");
+LoadScript("CgSetupInfo.tjs");
+LoadScript("SetupADVObject.tjs");
+LoadScript("Title.tjs");
+LoadScript("PlaySystemVoice.tjs");
+LoadScript("EyeCatch.tjs");
+LoadScript("Album.tjs");
+LoadScript("CgFlag.tjs");
+LoadScript("StaffRoll.tjs");
+LoadScript("EnvEffect.tjs");
+@if(__DEBUGMODE__)
+	LoadScript("debugUtility.tjs");
+@endif
+
+//乱数初期化
+randomSeed(System.getTickCount());
+
+//共有リソース
+//================================================
+//キャラクターデータ初期化
+CharDataInit();
+//================================================
+//システムレジスタ作成
+var sysReg = new SystemRegister("system.dat");
+var CONFIG = sysReg._config;
+//================================================
+//メインウィンドウの作成
+var win = new MainWindow();
+win.add(sysReg);
+win.add(saveMan);
+//================================================
+//サウンド管理オブジェクト
+var BGM = new SoundLayer(win);
+BGM.volume = CONFIG.volBgm;
+var SE = new SoundLayer(win);
+var ENVSE = new SoundLayer(win);
+SE.volume = ENVSE.volume = CONFIG.volSe;
+var SYSTEMSOUND = new SoundLayer(win);
+SYSTEMSOUND.volume = CONFIG.volSystem;
+
+var VOICE = null;	//これはADVScreen内で作成する
+var BGV = null;		//これはADVScreen内で作成する
+//================================================
+//レンダリング済みフォント登録
+PrerenderedFontInit();
+//================================================
+//セーブデータ用リソース
+var IMG_SAVEDATA_BASE = [];
+	IMG_SAVEDATA_BASE[0] = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_BASE[0].loadImages(LoadSaveUiFile("slot_base.png"));
+	IMG_SAVEDATA_BASE[0].setSizeToImageSize();
+	IMG_SAVEDATA_BASE[1] = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_BASE[1].loadImages(LoadSaveUiFile("slot_base.png"));
+	IMG_SAVEDATA_BASE[1].setSizeToImageSize();
+var IMG_SAVEDATA_NUM = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_NUM.loadImages("FRM_0304");
+	IMG_SAVEDATA_NUM.setSizeToImageSize();
+var IMG_SAVEDATA_ALPHA = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_ALPHA.loadImages(LoadSaveUiFile("thumbnail_empty.png"));
+	IMG_SAVEDATA_ALPHA.setSizeToImageSize();
+var IMG_SAVEDATA_BTN = [];
+	IMG_SAVEDATA_BTN[0] = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_BTN[0].loadImages(LoadSaveUiFile("slot_button.png"));
+	IMG_SAVEDATA_BTN[0].setSizeToImageSize();
+	IMG_SAVEDATA_BTN[1] = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_BTN[1].loadImages(LoadSaveUiFile("slot_button.png"));
+	IMG_SAVEDATA_BTN[1].setSizeToImageSize();
+var IMG_SAVEDATA_COM = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_COM.loadImages("FRM_0341");
+	IMG_SAVEDATA_COM.setSizeToImageSize();
+var IMG_SAVEDATA_COPY = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_COPY.loadImages(LoadSaveUiFile("button_copy.png"));
+	IMG_SAVEDATA_COPY.setSizeToImageSize();
+var IMG_SAVEDATA_MOVE = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_MOVE.loadImages(LoadSaveUiFile("button_move.png"));
+	IMG_SAVEDATA_MOVE.setSizeToImageSize();
+var IMG_SAVEDATA_DEL = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_DEL.loadImages(LoadSaveUiFile("button_delete.png"));
+	IMG_SAVEDATA_DEL.setSizeToImageSize();
+var IMG_SAVEDATA_LOCK = new Layer(win, win.primaryLayer);
+	IMG_SAVEDATA_LOCK.loadImages(LoadSaveUiFile("button_lock.png"));
+	IMG_SAVEDATA_LOCK.setSizeToImageSize();
+@if(__HARUKA__ == 0)
+	var files = [
+			"FRM_0311", "FRM_0312", "FRM_0313", "FRM_0314", "FRM_0315"
+		];
+@endif
+@if(__HARUKA__ != 0)
+	var files = [
+			"FRM_0311", "FRM_0312", "FRM_0313", "FRM_0314", "FRM_0315", "FRM_0316", "FRM_0317"
+		];
+@endif
+var IMG_SAVEDATA_CHAR = [];
+	for(var i=0;i<files.count;i++){
+		IMG_SAVEDATA_CHAR[i] = new Layer(win, win.primaryLayer);
+		with(IMG_SAVEDATA_CHAR[i]){
+			IMG_SAVEDATA_CHAR[i].loadImages(files[i]);
+			IMG_SAVEDATA_CHAR[i].setSizeToImageSize();
+		}
+	}
+invalidate files;
+delete files;
+//================================================
+
+@if(__DEBUGMODE__)
+//デバックパネル作成
+	LoadScript("DebugController.tjs");
+	var debug = new DebugController(win, win.baseLayer);
+	debug.setPos(CONFIG.debugX, CONFIG.debugY);
+	debug.edtScenarioJump.text = CONFIG.debugJump;
+	debug.edtSearchSkip.text = CONFIG.debugSearch;
+	debug.tglBuCenter.state = CONFIG.debugBuCenter;
+	debug.tglSupExp.state = CONFIG.debugSupExp;
+	debug.visible = CONFIG.debugVisible;
+@endif
+
+delete LoadScript;
