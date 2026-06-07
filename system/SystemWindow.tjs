@@ -387,6 +387,8 @@ class LoadSaveWindow extends SettingWindowBase{
 	var _save = [];
 	var _new;
 	var _newPage;
+	var _newPageDx = void;  // last target X of _newPage (to avoid mid-animation start offset)
+	var _newPageDy = void;  // last target Y of _newPage
 	var _btnMode;
 	var _btnClose;
 
@@ -814,12 +816,17 @@ class LoadSaveWindow extends SettingWindowBase{
 	function setNewSavePageMark(){
 		if(sysReg._newSaveNo <= 0){
 			_newPage.visible = false;
+			_newPageDx = void;
+			_newPageDy = void;
 			return;
 		}
 
 		var sv = _newPage.visible;
-		var sx = _newPage.left;
-		var sy = _newPage.top;
+		// Use the last *target* position as animation start point instead of
+		// _newPage.left/.top, which may be a mid-animation rendering value when
+		// setBookPageTag() triggers a collapse/expand animation simultaneously.
+		var sx = (_newPageDx !== void) ? _newPageDx : _newPage.left;
+		var sy = (_newPageDy !== void) ? _newPageDy : _newPage.top;
 		var dx, dy;
 		var dic = saveMan.getBookIndexFromIndex(sysReg._newSaveNo-1);
 		if(_bookNo != dic.book){
@@ -831,6 +838,9 @@ class LoadSaveWindow extends SettingWindowBase{
 		}
 		_newPage.setPos(dx, dy);
 		_newPage.visible = true;
+		// Record the target so next call uses it as start point
+		_newPageDx = dx;
+		_newPageDy = dy;
 
 		var dv = _newPage.visible;
 
