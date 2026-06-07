@@ -229,31 +229,25 @@ class SceneManager extends SceneBase{
 		//全てのウィンドウを閉じる
 		if(IsSettingWindow()) HideSettingWindow();
 
-		// Prepare file path - add savedata/ if not already present
-		var filePath = file;
-		if(file.indexOf("savedata/") != 0){
-			filePath = "savedata/" + file;
-		}
-
 		switch(_scene){
 		case SCENE_LOGO :
 		case SCENE_TITLE :
 		case SCENE_MOVIE :
 			var scene = getScene(_scene);
 			scene.close();
-			changeScene(SCENE_ADV, true, %[file:filePath]);
+			changeScene(SCENE_ADV, true, %[file:file]);
 			break;
 		case SCENE_ADV :
 			var scene = getScene(_scene);
 			// Load the save file
-			scene.load(filePath);
+			scene.load(file);
 			break;
 		case SCENE_ALBUM :
 		case SCENE_MUSIC :
 		case SCENE_MEMORIES :
 			var scene = getScene(_scene);
 			scene.close();
-			changeScene(SCENE_ADV, true, %[file:filePath]);
+			changeScene(SCENE_ADV, true, %[file:file]);
 			break;
 		}
 	}
