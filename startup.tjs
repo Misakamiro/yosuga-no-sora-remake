@@ -21,6 +21,12 @@ Debug.message("Auto-paths: system/ and content-data/ registered");
 // Startup sequence - files found via auto-path in system/ directory
 Scripts.execStorage("Status.tjs");
 Debug.message("startup.tjs: Status.tjs loaded");
+
+// Android: reduce continuous handler frequency to 30Hz to save CPU
+if(System.platformName == "Android"){
+    System.setArgument("-contfreq", "30");
+}
+
 Debug.message("startup.tjs: About to load Initialize.tjs...");
 Scripts.execStorage("Initialize.tjs");
 Debug.message("startup.tjs: Initialize.tjs loaded");
