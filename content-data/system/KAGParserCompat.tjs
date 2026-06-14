@@ -3,6 +3,7 @@ class KAGParserCompat
 	var ignoreCR = false;
 	var processSpecialTags = true;
 	var multiLineTagEnabled = false;
+	var debugLevel = 0;
 	var _stop = false;
 	var _storage = "";
 	var _line = 0;
@@ -10,6 +11,7 @@ class KAGParserCompat
 	var _tags = [];
 	var macros = %[];
 	var _macroExpansionStack = [];
+	var _conditionStack = [];
 
 	function KAGParser()
 	{
@@ -28,6 +30,7 @@ class KAGParserCompat
 		_tagIndex = 0;
 		_stop = false;
 		_macroExpansionStack = [];
+		_conditionStack = [];
 
 		if(src === void || src === "") return;
 
@@ -238,7 +241,67 @@ class KAGParserCompat
 		clear();
 	}
 
-	function getNextTag()
+	function _isConditionActive()
+	{
+		for(var i = 0; i < _conditionStack.count; i++)
+		{
+			if(!_conditionStack[i].active) return false;
+		}
+		return true;
+	}
+
+	function _evalCondition(exp)
+	{
+		if(exp === void || exp == "") return false;
+		try
+		{
+			var ret = Scripts.eval(exp);
+			return ret ? true : false;
+		}
+		catch(e)
+		{
+			Debug.notice("KAGParser: condition eval failed: " + exp + " - " + e);
+			return false;
+		}
+	}
+
+	function _handleConditionTag(tag)
+	{
+		var tagname = tag.tagname.toLowerCase();
+		switch(tagname)
+		{
+		case "if" :
+			var parentActive = _isConditionActive();
+			var active = parentActive && _evalCondition(tag.exp);
+			_conditionStack.push(%[parentActive:parentActive, active:active, branchTaken:active]);
+			return true;
+		case "elsif" :
+			if(_conditionStack.count == 0) return true;
+			var frame = _conditionStack[_conditionStack.count - 1];
+			if(!frame.parentActive || frame.branchTaken)
+			{
+				frame.active = false;
+			}
+			else
+			{
+				frame.active = _evalCondition(tag.exp);
+				if(frame.active) frame.branchTaken = true;
+			}
+			return true;
+		case "else" :
+			if(_conditionStack.count == 0) return true;
+			var frame = _conditionStack[_conditionStack.count - 1];
+			frame.active = frame.parentActive && !frame.branchTaken;
+			frame.branchTaken = true;
+			return true;
+		case "endif" :
+			if(_conditionStack.count > 0) _conditionStack.pop();
+			return true;
+		}
+		return false;
+	}
+
+	function _getNextRawTag()
 	{
 		if(_stop) return void;
 
@@ -269,10 +332,29 @@ class KAGParserCompat
 		if(macros[tag.tagname] !== void)
 		{
 			_macroExpansionStack.push(%[tags: _expandMacro(tag, macros[tag.tagname]), index: 0]);
-			return getNextTag();
+			return _getNextRawTag();
 		}
 
 		return tag;
+	}
+
+	function getNextTag()
+	{
+		if(_stop) return void;
+
+		while(true)
+		{
+			var tag = _getNextRawTag();
+			if(tag === void) return void;
+
+			if(processSpecialTags)
+			{
+				if(_handleConditionTag(tag)) continue;
+				if(!_isConditionActive()) continue;
+			}
+
+			return tag;
+		}
 	}
 
 	function _expandMacro(callTag, macroTags)
@@ -334,6 +416,7 @@ class KAGParserCompat
 		_tagIndex = 0;
 		_stop = false;
 		_macroExpansionStack = [];
+		_conditionStack = [];
 	}
 
 	function clearStop()
@@ -345,6 +428,7 @@ class KAGParserCompat
 	{
 		_stop = false;
 		_macroExpansionStack = [];
+		_conditionStack = [];
 		var searchLabel = label;
 		if(searchLabel.charAt(0) != "*") searchLabel = "*" + searchLabel;
 		for(var i = 0; i < _tags.count; i++)
@@ -362,5 +446,6 @@ class KAGParserCompat
 		_tagIndex = 0;
 		_stop = false;
 		_macroExpansionStack = [];
+		_conditionStack = [];
 	}
 }

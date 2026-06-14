@@ -1,0 +1,98 @@
+13616  raw=心の声  display=(旁白/不显示)
+ 8975  raw=悠  display=悠
+ 3463  raw=瑛  display=瑛
+ 2780  raw=穹  display=穹
+ 2758  raw=奈绪  display=奈绪
+ 2364  raw=一叶  display=一叶
+ 2298  raw=亮平  display=亮平
+ 1560  raw=初佳  display=初佳
+  482  raw=八寻  display=八寻
+  （梢）316  raw=班长  display=班长
+  （X）   85  raw=声  display=声
+  （X）   62  raw=日志  display=日志
+   48  raw=月见山  display=月见山
+   (一叶•父) 34  raw=一叶之父  display=一叶之父
+   30  raw=高野店长  display=高野店长
+   30  raw=孩子Ｂ  display=孩子Ｂ
+      (初佳•母)25  raw=初佳之母  display=初佳之母
+   （摊贩大叔）4  raw=露天店的大叔  display=露天店的大叔
+   22  raw=孩子Ａ  display=孩子Ａ
+   （奈绪•友）22  raw=奈绪的朋友  display=奈绪的朋友
+  （瑛•祖父） 21  raw=瑛的祖父  display=瑛的祖父
+   （奈绪•母）20  raw=奈绪之母  display=奈绪之母
+ （一叶•母）  20  raw=一叶之母  display=一叶之母
+   18  raw=女性  display=女性
+   16  raw=阿姨  display=阿姨
+  （电话声） 16  raw=电话的声  display=电话的声
+   14  raw=游泳部部长  display=游泳部部长
+   （数学老师）12  raw=数学教师  display=数学教师
+   （女孩）11  raw=女孩子  display=女孩子
+   （邻居奶奶）11  raw=附近的老奶奶  display=附近的老奶奶
+ （祖父儿媳）  10  raw=祖父的儿媳妇  display=祖父的儿媳妇
+   （邻居爷爷） 9  raw=附近的老爷爷  display=附近的老爷爷
+   （英语老师） 9  raw=英语教师  display=英语教师
+    9  raw=金平  display=金平
+    9  raw=电话  display=电话
+    8  raw=悠之母  display=悠之母
+    （祖父•子）8  raw=祖父的儿子  display=祖父的儿子
+    7  raw=同学  display=同学
+    7  raw=孩子Ｃ  display=孩子Ｃ
+   (和上 女孩子 合并) 7  raw=女孩  display=女孩
+    （和服男）6  raw=穿和服男  display=穿和服男
+    （摊贩阿姨）5  raw=露天店阿姨  display=露天店阿姨
+   (看店小孩) 5  raw=看店的孩子  display=看店的孩子
+    4  raw=和服店  display=和服店
+    4  raw=瑛＆亮平  display=瑛＆亮平
+    (邮递员)4  raw=邮政职员  display=邮政职员
+   (吓人女) 4  raw=吓人的女性  display=吓人的女性
+    4  raw=工薪族  display=工薪族
+  （班主任）  4  raw=级任  display=级任
+    3  raw=巫女Ａ  display=巫女Ａ
+    3  raw=公交广播  display=公交广播
+    （一齐）3  raw=大家  display=大家
+    （谜之女）3  raw=谜之美女  display=谜之美女
+    3  raw=女仆  display=女仆
+    （男生Ａ）3  raw=男学生Ａ  display=男学生Ａ
+    2  raw=悠＆穹  display=悠＆穹
+    （与上 女性 合并）2  raw=女  display=女
+    2  raw=足球社员Ａ  display=足球社员Ａ
+    （女生A）2  raw=女学生Ａ  display=女学生Ａ
+    2  raw=车内广播  display=车内广播
+    2  raw=怒喊声  display=怒喊声
+    2  raw=大声  display=大声
+    1  raw=穹＆瑛＆一叶  display=穹＆瑛＆一叶
+    （与上瑛＆亮平合并）1  raw=亮平＆瑛  display=亮平＆瑛
+    （与下男性合并）1  raw=男  display=男
+    1  raw=穹＆班长  display=穹＆班长
+    （老师）1  raw=教師  display=教師
+    1  raw=奈绪＆班长  display=奈绪＆班长
+    （手机消息）1  raw=手机广播  display=手机广播
+    1  raw=奈绪＆亮平  display=奈绪＆亮平
+    1  raw=巫女Ｂ  display=巫女Ｂ
+    1  raw=足球社员Ｂ  display=足球社员Ｂ
+    1  raw=足球社员Ｃ  display=足球社员Ｃ
+    1  raw=女学生Ｂ  display=女学生Ｂ
+    1  raw=女学生Ｃ  display=女学生Ｃ
+    1  raw=棒球社员Ａ  display=棒球社员Ａ
+    1  raw=棒球社员Ｂ  display=棒球社员Ｂ
+    1  raw=棒球社员Ｃ  display=棒球社员Ｃ
+    (女学生)1  raw=女孩学生  display=女孩学生
+    1  raw=公交司机  display=公交司机
+    1  raw=悠＆亮平＆奈绪  display=悠＆亮平＆奈绪
+    1  raw=瑛＆一叶  display=瑛＆一叶
+    1  raw=亮平＆奈绪＆一叶  display=亮平＆奈绪＆一叶
+    （与上女性合并）1  raw=女性的声  display=女性的声
+    1  raw=悠＆一叶  display=悠＆一叶
+    1  raw=瑛＆奈绪  display=瑛＆奈绪
+   1  raw=男性  display=男性
+    1  raw=一叶＆班长  display=一叶＆班长
+    1  raw=哭泣声  display=哭泣声
+    （与上悠&穹合并）1  raw=穹＆悠  display=穹＆悠
+    （与上大声合并）1  raw=有气势的声音  display=有气势的声音
+   （胆怯声） 1  raw=胆怯的声  display=胆怯的声
+    1  raw=瑛＆初佳＆亮平  display=瑛＆初佳＆亮平
+    1  raw=奈绪＆瑛＆一叶＆亮平  display=奈绪＆瑛＆一叶＆亮平
+    1  raw=初佳＆悠  display=初佳＆悠
+  与前奈绪&亮平合并  1  raw=亮平＆奈绪  display=亮平＆奈绪
+    （女孩&悠）1  raw=女孩子＆悠  display=女孩子＆悠
+    （西装男）1  raw=西装男性  display=西装男性

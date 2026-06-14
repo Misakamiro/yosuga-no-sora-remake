@@ -1,9 +1,0 @@
-/* GdiPlus Compat - Direct assignment */
-global.GdiPlus = %[];
-global.GdiPlus.Appearance = function() {};
-global.GdiPlus.Graphics = function() {};
-global.GdiPlus.Bitmap = function() {};
-global.GdiPlus.Font = function() {};
-global.GdiPlus.Pen = function() {};
-global.GdiPlus.Brush = function() {};
-Debug.notice("GdiPlus loaded");

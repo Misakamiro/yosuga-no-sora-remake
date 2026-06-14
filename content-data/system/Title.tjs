@@ -1,10 +1,11 @@
-﻿/*
+/*
 	ロゴ・タイトル
 */
 
 class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 	var _state = 0;
 	var _fCancel = false;
+	var _fGoTitle = false;
 	var _spr = %[];
 
 	var _movie;
@@ -12,8 +13,8 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 	var _te;
 
 	var SPR_LIST = [
-		%[id:"ATTENTION_MARK", file:"FRM_0502", center:[100,  19], pos:[400, 120]], 
-		%[id:"ATTENTION"     , file:"FRM_0503", center:[320, 150], pos:[400, 322]]
+		%[id:"ATTENTION_MARK", file:"ui_1920/FRM_0502.png", center:[179,  34], pos:[960, 235]], 
+		%[id:"ATTENTION"     , file:"ui_1920/FRM_0503.png", center:[580, 270], pos:[960, 595]]
 	];
 
 	var stLogo = 1;
@@ -31,7 +32,7 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 
 		_spr["BASE"] = new global.Sprite(win, this);
 		with(_spr.BASE){
-			.loadImages("FRM_0501");
+			.loadImages("ui_1920/FRM_0501.png");
 			.setSizeToImageSize();
 			.setPos(WINDOW_CENTER_X-.width\2, WINDOW_CENTER_Y-.height\2);
 			.hitThreshold = 256;
@@ -57,7 +58,7 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 
 		visible = true;
 
-		_movie = new MovieLayer(win, this);
+		_movie = new MovieLayer(win, this, true);
 		_movie.hitThreshold = 256;
 		_movie.start("sphere", this);
 		_state = stLogo;
@@ -122,6 +123,13 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 	}
 	//次のシーンに移動する
 	function step05(){
+		gotoTitle();
+	}
+
+	function gotoTitle(){
+		if(_fGoTitle) return;
+		_fGoTitle = true;
+
 		with(SPR_COVER){
 			.setTransitionCompleteCall();
 		}
@@ -197,8 +205,9 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 		_te.stop();
 
 		switch(_state){
-		case stLogo : 
+		case stLogo :
 			_movie.stop();
+			gotoTitle();
 			break;
 		case stAttentionPlay : 
 			_fCancel = true;
@@ -223,7 +232,7 @@ class Logo extends Sprite, SelectItemNotifyBase, SceneBase{
 	function action(ev){
 		if(ev.type == "Movie.onStatusChanged" && ev.status == "stop"){
 			_movie.visible = false;
-			OnceCall(step02, 100);
+			gotoTitle();
 		}
 	}
 }
@@ -299,28 +308,28 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 	var _enterBonus = false;
 
 	var BTN_LIST = [
-		%[id:"btnContinue", file:"FRM_0553", ptn:2, par:0, flag:0], 
-		%[id:"btnStart"   , file:"FRM_0551", ptn:2, par:0, flag:0], 
-		%[id:"btnLoad"    , file:"FRM_0552", ptn:2, par:0, flag:0], 
-		%[id:"btnConfig"  , file:"FRM_0554", ptn:2, par:0, flag:0], 
-		%[id:"btnBonus"   , file:"FRM_0555", ptn:2, par:0, flag:0], 
-		%[id:"btnEnd"     , file:"FRM_0556", ptn:2, par:0, flag:0], 
+		%[id:"btnContinue", file:"ui_1920/main_menu/FRM_0553_button_continue.png", ptn:2, par:0, flag:0], 
+		%[id:"btnStart"   , file:"ui_1920/main_menu/FRM_0551_button_start.png", ptn:2, par:0, flag:0], 
+		%[id:"btnLoad"    , file:"ui_1920/main_menu/FRM_0552_button_load.png", ptn:2, par:0, flag:0], 
+		%[id:"btnConfig"  , file:"ui_1920/main_menu/FRM_0554_button_config.png", ptn:2, par:0, flag:0], 
+		%[id:"btnBonus"   , file:"ui_1920/main_menu/FRM_0555_button_appreciation.png", ptn:2, par:0, flag:0], 
+		%[id:"btnEnd"     , file:"ui_1920/main_menu/FRM_0556_button_exit.png", ptn:2, par:0, flag:0], 
 
-		%[id:"btnAlbum"   , file:"FRM_0561", ptn:2, par:1, flag:0], 
-		%[id:"btnMusic"   , file:"FRM_0562", ptn:2, par:1, flag:0], 
-		%[id:"btnMemories", file:"FRM_0563", ptn:2, par:1, flag:0]
+		%[id:"btnAlbum"   , file:"ui_1920/main_menu/FRM_0561_button_cg_mode.png", ptn:2, par:1, flag:0], 
+		%[id:"btnMusic"   , file:"ui_1920/main_menu/FRM_0562_button_music_mode.png", ptn:2, par:1, flag:0], 
+		%[id:"btnMemories", file:"ui_1920/main_menu/FRM_0563_button_recollection_mode.png", ptn:2, par:1, flag:0]
 	];
 
 	function Title(win, par, fBonus=false){
 		Sprite(...);
 		hitThreshold = 0;
-		loadImages("FRM_0511");
+		loadImages("ui_1920/main_menu/FRM_0511_title_background.png");
 		setSizeToImageSize();
 		absolute = LAYER_TITLE;
 
 		_btnBase = new global.Layer(win, this);
 		with(_btnBase){
-			.setSize(800, 90);
+			.setSize(WINDOW_WIDTH, 160);
 
 			.setPos(0, WINDOW_HEIGHT-.height);
 
@@ -370,7 +379,7 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 			}
 		}
 
-		var interval = 3;
+		var interval = 12;
 		var layout = [];
 		if(ChkAutoSave()){
 			layout.add(btnContinue);
@@ -384,13 +393,13 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 			}
 		@endif
 		layout.add(btnEnd);
-		setLayout(layout, 89, 24, interval);
+		setLayout(layout, 55, interval);
 
 		layout.clear();
 		layout.add(btnAlbum);
 		layout.add(btnMusic);
 		layout.add(btnMemories);
-		setLayout(layout, 434, 36, interval);
+		setLayout(layout, 55, interval);
 
 		@if(__TRIAL__ == 0)
 			if(!ChkGlobalFlag(1))	btnBonus.visible = false;
@@ -418,10 +427,10 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 
 		_logo = new global.Sprite(win, this);
 		with(_logo){
-			.loadImages("FRM_0513");
+			.loadImages("ui_1920/main_menu/FRM_0513_title_logo.png");
 			.setSizeToImageSize();
 
-			.setPos(176, 88);
+			.setPos(620, 88);
 
 			.hitThreshold = 256;
 			.visible = true;
@@ -431,7 +440,7 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		@if(__TRIAL__)
 			_logoTR = new global.Sprite(win, this);
 			with(_logoTR){
-				.loadImages("FRM_0513");
+				.loadImages("ui_1920/main_menu/FRM_0513_title_logo.png");
 				.setSizeToImageSize();
 
 				.setPos(_logo.left+_logo.width-.width, _logo.top+_logo.height);
@@ -505,12 +514,17 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		}
 	}
 
-	function setLayout(layout=[], sx, sy, interval=0){
-		var dx = sx;
+	function setLayout(layout=[], sy, interval=0){
+		var total = 0;
+		for(var i=0;i<layout.count;i++){
+			total += layout[i].width;
+			if(i != 0) total += interval;
+		}
+		var dx = int((WINDOW_WIDTH-total)/2);
 		var dy = sy;
 		for(var i=0;i<layout.count;i++){
 			with(layout[i]){
-				.setPos(dx, dy - .height \ 2);
+				.setPos(dx, dy);
 				dx += .width + interval;
 				.visible = true;
 			}
@@ -528,7 +542,7 @@ class Title extends Sprite, SelectItemNotifyBase, SceneBase, ChainItemBase{
 		case btnStart :
 			hitThresholdSelectItems(256);
 			
-			game.changeScene(SCENE_ADV, false, %[scenario:"00_z000"]);
+			game.changeScene(SCENE_ADV, true, %[scenario:"00_z000"]);
 
 			
 
@@ -633,7 +647,7 @@ case btnContinue :
 					var x = btnContinue.parent.left + btnContinue.left + btnContinue.width \ 2- .width \ 2;
 					var y = btnContinue.parent.top +btnContinue.top - .height - 4;
 
-					.set(0, -1, ref.realDate, ref.gameDate, ref.comment, "asave", ref.root, ref.comment_edit);
+					.set(0, -1, ref.realDate, ref.gameDate, ref.comment, ref.file, ref.root, ref.comment_edit);
 					.setupInfo();
 					.setupThumb();
 
@@ -762,8 +776,13 @@ class EndScene extends Sprite, SceneBase{
 		Sprite(...);
 		absolute = LAYER_END;
 
-		loadImages("FRM_0501");
-		setSizeToImageSize();
+		var img = new global.Layer(win, this);
+		img.loadImages("ui_1920/FRM_0501.png");
+		img.setSizeToImageSize();
+		setImageSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		stretchCopy(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, img, 0, 0, img.width, img.height, stFastLinear);
+		setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		invalidate img;
 
 		opacity = 0;
 		setBlendingEnvelope(255);

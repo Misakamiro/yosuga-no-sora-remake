@@ -1,5 +1,16 @@
-# 本机用户数据
+# 大型游戏素材（体积过大，需本地自备）
+content-data/audio_ogg/
+content-data/character_1920/
+content-data/event_1920/
+content-data/bg_1920/
+content-data/font/
+
+# 视频（单文件超 GitHub 100MB 限制）
+*.mpg
+
+# 本机用户数据 / 运行时存档与崩溃转储
 savedata/
+*.dmp
 
 # 发布/构建产物
 dist/
@@ -9,7 +20,8 @@ work/
 tmp/
 temp/
 
-# 常见日志和临时文件
+# 日志与临时输出
+out.txt
 *.log
 *.tmp
 *.cache
@@ -17,3 +29,6 @@ temp/
 # 系统文件
 Thumbs.db
 desktop.ini
+
+# 编辑器配置
+.vscode/

@@ -7,8 +7,23 @@ win.bringToFront();
 global.game = new SceneManager(win);
 
 var useNewGame = (System.getArgument("-newgame") !== void);
+var useAlbum = (System.getArgument("-album") !== void);
+var useMusic = (System.getArgument("-music") !== void);
+var useMemories = (System.getArgument("-memories") !== void);
 
-if (useNewGame)
+if (useAlbum)
+{
+	game.changeScene(SCENE_ALBUM);
+}
+else if (useMusic)
+{
+	game.changeScene(SCENE_MUSIC);
+}
+else if (useMemories)
+{
+	game.changeScene(SCENE_MEMORIES);
+}
+else if (useNewGame)
 {
 	Debug.message(">>> -newgame detected, switching to ADV");
 	game.setScene(SCENE_ADV);
@@ -21,7 +36,7 @@ if (useNewGame)
 }
 else
 {
-	game.changeScene(SCENE_TITLE);
+	game.changeScene(SCENE_LOGO);
 }
 
 delete boot;
