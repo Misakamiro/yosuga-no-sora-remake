@@ -152,6 +152,26 @@
 5. 打包前必须排除 `savedata/`、日志、临时输出和未验收文件。
 6. 大文件通过 Git LFS 管理，避免超过 GitHub 单文件限制。
 
+## ⚠️ 注意事项：本仓库不含资源文件
+
+由于体积较大，本仓库**不包含**以下游戏资源目录，克隆后需要单独下载：
+
+- `content-data/audio_ogg/`：音频（BGM、语音、音效）
+- `content-data/character_1920/`：1920x1080 立绘
+- `content-data/event_1920/`：1920x1080 事件 CG
+- `content-data/bg_1920/`：1920x1080 背景
+- `content-data/font/`：字体文件
+
+这些目录已通过 `.gitignore` 忽略，仓库中只保留占位/示例文件。
+
+### 资源下载
+
+下载地址（阿里云 OSS）：
+
+> <https://shuimotest.oss-cn-beijing.aliyuncs.com/content-data.rar>
+
+下载并解压后，将其中的内容合并到仓库根目录的 `content-data/` 下，确保上述目录结构完整后再运行游戏，否则会出现缺图、缺音等问题。
+
 ## 当前仓库说明
 
 本仓库包含当前项目文件、脚本、资源、文档和人员责任包。`savedata/` 属于本机用户数据，不进入仓库。后续如需要发布用户安装包，应以 `docs/modules/packaging/` 中的规则重新生成 `dist/` 交付物。
